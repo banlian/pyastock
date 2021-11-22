@@ -1,3 +1,4 @@
+import pandas as pd
 from funcy import print_durations
 
 import time
@@ -16,19 +17,128 @@ mpl.rcParams['axes.unicode_minus'] = False
 width, height = 25, 12.5
 plt.rcParams['figure.figsize'] = width, height
 
-# 通达信日K数据的收盘价索引
-p_index = 3
-a_index = 5
 
-algo = 3
+class cfg(object):
+    # 通达信日K数据的收盘价索引
+    # p_index = 3
+    # a_index = 4
+
+    # pickle 索引
+    p_index = 5
+    a_index = 7
+    algo = 3
+    savepath = r'.\tdx_kline'
+
+    ndays = 60
+    # tdx = 1  pickle = 2
+    datasource = 2
+    pass
+
+
+exceptions = []
+
+
+def init_ex():
+    global exfile
+    exfile = open('plot_exception.log', 'w')
+    printex('init ex')
+    pass
+
+
+def printex(*args):
+    print(args, file=exfile)
+
+
+def save_ex():
+    printex('save ex')
+    exfile.close()
+
+
+def get_stock_frame(s):
+    if cfg.datasource == 1:
+        file = get_tdx_kline_file(s)
+        if file is None or not os.path.exists(file):
+            print('not found', file)
+            return None
+
+        try:
+            reader = TdxDailyBarReader()
+            df = reader.get_df(file)
+            return df.tail(cfg.ndays)
+        except:
+            printex('read frame error', file)
+            return None
+            pass
+    else:
+        try:
+            df = get_kdf_from_pkl(s)
+            return df.tail(cfg.ndays)
+        except:
+            printex('read pickle error', s)
+            return None
+            pass
+
+
+def calc_ref_frameindex(stocks, stockframes):
+    frames = []
+    for s in stocks:
+        f = stockframes[s]
+        if f is not None:
+            # f = f.reset_index(drop=True)
+            frames.append(f)
+
+    frameindex = []
+    for i in range(frames[0].shape[0]):
+        data = [f.iloc[i, cfg.p_index] for f in frames]
+        p = sum([d for d in data if d is not None])
+        frameindex.append(p / len(frames))
+        pass
+
+    return frameindex
+
+
+def skip_stock_filter_by_index(*args):
+    '''
+    过滤重新计算close后的stock dataframe
+    '''
+    frame = args[0]
+    frameindex = args[1]
+    price = frame.iloc[:, cfg.p_index].values
+    for i in range(len(price)):
+        price[i] = price[i] - frameindex[i]
+    pmax = max(price)
+    pmin = min(price)
+    if pmax - pmin < 15:
+        return True
+    else:
+        return False
+    pass
+
+
+def skip_stock_filter(*args):
+    '''
+    过滤重新计算close后的stock dataframe
+    '''
+    frame = args[0]
+    price = frame.iloc[:, cfg.p_index]
+    pmax = max(price)
+    pmin = min(price)
+    if pmax - pmin < 30:
+        return True
+    else:
+        return False
+    pass
 
 
 def calc_frame_price(frame):
-    if algo == 1:
+    """
+    重新计算close价格 方便绘制多股对比图形
+    """
+    if cfg.algo == 1:
         r = base_price_algo(frame)
-    elif algo == 2:
+    elif cfg.algo == 2:
         r = price_percentage_algo(frame, False)
-    elif algo == 3:
+    elif cfg.algo == 3:
         r = price_percentage_algo(frame, True)
     else:
         r = raw_price_algo(frame)
@@ -42,11 +152,10 @@ def raw_price_algo(frame):
     相对起始价格的涨幅不能很好展示每天的涨幅和波动情况
     不能体现股价高位时的波动 高位波动大 但相对初始价格波动较小
     '''
-    prices = frame.iloc[:, p_index]
+    prices = frame.iloc[:, cfg.p_index].values
     p0 = prices[0]
-    # print('base price', p0)
     for i in range(len(prices)):
-        frame.iloc[i, p_index] = round((prices[i] - p0) / p0 * 100, 2)
+        frame.iloc[i, cfg.p_index] = round((prices[i] - p0) / p0 * 100, 2)
     pass
     return 'raw'
 
@@ -57,12 +166,10 @@ def base_price_algo(frame):
     相对起始价格的涨幅不能很好展示每天的涨幅和波动情况
     不能体现股价高位时的波动 高位波动大 但相对初始价格波动较小
     '''
-    prices = frame.iloc[:, p_index]
+    prices = frame.iloc[:, cfg.p_index].values
     p0 = prices[0]
-    # print('base price', p0)
-
     for i in range(len(prices)):
-        frame.iloc[i, p_index] = round((prices[i] - p0) / p0 * 100, 2)
+        frame.iloc[i, cfg.p_index] = round((prices[i] - p0) / p0 * 100, 2)
     pass
 
     return 'baseprice'
@@ -72,8 +179,8 @@ def center_of_mass_algo(frame):
     """
     计算股价重心
     """
-    prices = frame.iloc[:, p_index]
-    amount = frame.iloc[:, a_index]
+    prices = frame.iloc[:, cfg.p_index].values
+    amount = frame.iloc[:, cfg.a_index].values
 
     p0 = prices[0]
 
@@ -83,18 +190,19 @@ def center_of_mass_algo(frame):
     for i in range(1, len(prices)):
         amountfactor = amount[i] / amount[i - 1]
         # 防止爆量造成 factor 过大
-        # atan 0-1基本线性 收敛于2
+        # atan 0-1基本线性 收敛于2 需要乘以1/tan(1) = 1.27
         amountfactor = math.atan(amountfactor) * 1.27
-
-        percents.append(round((prices[i] - prices[i - 1]) / prices[i - 1] * 100 * amountfactor, 2))
+        p1 = (prices.iloc[i])
+        p0 = (prices.iloc[i - 1])
+        percents.append(round((p1 - p0) / p0 * 100 * amountfactor, 2))
     pass
 
     # assign mass
     for i in range(len(prices)):
         if i > 0:
-            frame.iloc[i, p_index] = sum(percents[:i + 1])
+            frame.iloc[i, cfg.p_index] = sum(percents[:i + 1])
         else:
-            frame.iloc[i, p_index] = 0
+            frame.iloc[i, cfg.p_index] = 0
 
     pass
 
@@ -105,8 +213,9 @@ def price_percentage_algo(frame, is_amount):
     涨跌幅相加算法
     无法体现股价实际高低情况 涨幅可体现股价波动  涨幅*成交量因子？低的更低 高的更高
     '''
-    prices = frame.iloc[:, p_index]
-    amount = frame.iloc[:, a_index]
+    prices = frame.iloc[:, cfg.p_index].values
+    amount = frame.iloc[:, cfg.a_index].values
+    amount = [a / 10000000 for a in amount]
 
     p0 = prices[0]
     # print('base price', p0)
@@ -120,31 +229,86 @@ def price_percentage_algo(frame, is_amount):
             # 防止爆量造成 factor 过大
             # atan 0-1基本线性 收敛于2
             amountfactor = math.atan(amountfactor) * 1.27
-            percents.append(round((prices[i] - prices[i - 1]) / prices[i - 1] * 100 * amountfactor, 2))
+            p1 = (prices[i])
+            p0 = (prices[i - 1])
+            percents.append(round((p1 - p0) / p0 * 100 * amountfactor, 2))
         pass
     else:
         # 计算当日涨跌幅
         for i in range(1, len(prices)):
-            percents.append(round((prices[i] - prices[i - 1]) / prices[i - 1] * 100, 2))
+            p1 = (prices[i])
+            p0 = (prices[i - 1])
+            percents.append(round((p1 - p0) / p0 * 100, 2))
 
     for i in range(len(prices)):
         if i > 0:
-            frame.iloc[i, p_index] = sum(percents[:i + 1])
+            frame.iloc[i, cfg.p_index] = sum(percents[:i + 1])
         else:
-            frame.iloc[i, p_index] = 0
+            frame.iloc[i, cfg.p_index] = 0
     pass
 
     return 'percentage_amount' if is_amount else 'percentage'
 
 
-def get_tdx_kline_file(stock):
-    '''
+def get_tdx_kline_file(s):
+    """
     get tdx day file full path
-    '''
-    if stock.find('sh') >= 0:
-        return r"C:\new_jyplug\vipdoc\sh\lday\{0}".format(stock)
+    """
+    if isinstance(s, str):
+        temp = s
+        s = db_name_to_id(s)
+        if s is None:
+            printex('get_tdx_kline_file error: not found stock id from db:', temp)
+            return None
+
+    if not isinstance(s, int):
+        printex('get_tdx_kline_file error: input error', s)
+        return None
+
+    if s == 300 or s == 999999:
+        file = 'sh{0:0>6d}.day'.format(s)
+    elif 600000 <= s < 699999:
+        file = 'sh{0}.day'.format(s)
+    elif s < 10000 or (399999 > s > 300000):
+        file = 'sz{0:0>6d}.day'.format(s)
     else:
-        return r"C:\new_jyplug\vipdoc\sz\lday\{0}".format(stock)
+        printex('get_tdx_kline_file error: stock over range ', s)
+        return None
+
+    if file.find('sh') >= 0:
+        return r"C:\new_jyplug\vipdoc\sh\lday\{0}".format(file)
+    else:
+        return r"C:\new_jyplug\vipdoc\sz\lday\{0}".format(file)
+
+
+def get_pkl_filename(s):
+    '''
+    id convert to day file name
+    '''
+    if s is None:
+        printex('get_pkl_filename error:', s)
+        return None
+
+    if isinstance(s, str):
+        temp = s
+        s = db_name_to_id(s)
+        if s is None:
+            printex('get_pkl_filename error: not found stock id from db:', temp)
+            return None
+
+    if not isinstance(s, int):
+        printex('get_pkl_filename error: input error', s)
+        return None
+
+    if s == 300 or s == 999999:
+        return 'sh.{0:0>6d}'.format(s)
+    if 600000 <= s < 699999:
+        return 'sh.{0}'.format(s)
+    if s < 10000 or (399999 > s > 300000):
+        return 'sz.{0:0>6d}'.format(s)
+
+    printex('get_pkl_filename error: stock over range ', s)
+    return None
 
 
 def db_name_to_id(name):
@@ -179,51 +343,42 @@ def db_id_to_name(id):
             return str(id)
 
 
-def tdx_id_to_klinefile(stockid):
-    '''
-    id convert to day file name
-    '''
-    if stockid is None:
-        print('not found stock id ', stockid)
-        return None
-    if stockid == 300 or stockid == 999999:
-        return 'sh{0:0>6d}.day'.format(stockid)
-    if stockid >= 600000 and stockid < 699999:
-        return 'sh{0}.day'.format(stockid)
-    if stockid < 10000 or (stockid < 399999 and stockid > 300000):
-        return 'sz{0:0>6d}.day'.format(stockid)
-    return None
 
-
-def find_stock_kline_file(s):
-    if isinstance(s, str):
-        file = tdx_id_to_klinefile(db_name_to_id(s))
-    elif isinstance(s, int):
-        file = tdx_id_to_klinefile(s)
-    else:
-        print('find_stock_kline_file error: ', s)
-        return None
-
-    if file is None:
-        print('find_stock_kline_file error: not found', s)
-        return None
-    return get_tdx_kline_file(file)
-
-
-def get_stock_kline_day_dataframe(s):
+def get_kdf_from_dayfile(s):
     '''
     获取tdx日线数据
     '''
-    file = find_stock_kline_file(s)
+    file = get_tdx_kline_file(s)
     if file is None or os.path.exists(file):
         print('not found file:', file)
         return None
     reader = TdxDailyBarReader()
-    return reader.get_df(file)
+    f = reader.get_df(file)
+    if f.empty:
+        f = None
+    return f
+
+
+def get_kdf_from_pkl(s):
+    if not isinstance(s, int):
+        printex('get pickle error, stock is not int', s)
+        temp = s
+        s = db_name_to_id(s)
+        if s is None:
+            printex('find stock id error', temp)
+            return None
+
+    file = r'.\rawdata\{}.pkl'.format(get_pkl_filename(s))
+    if not os.path.exists(file):
+        printex('find pickel error', s)
+        return None
+
+    return pd.read_pickle(file)
+
 
 
 @print_durations()
-def plot_stocks(stocks, ndays=90, title='', savepath='.'):
+def plot_stocks(stocks, title=''):
     '''
     plot multi stocks k line in one figure
     '''
@@ -250,58 +405,86 @@ def plot_stocks(stocks, ndays=90, title='', savepath='.'):
     # ax.xaxis.set_major_locator(maloc)
     # ax.xaxis.set_minor_locator(miloc)
 
+    stock_legends = []
+
+    # recalc stock frames
+    price_algo = ''
+    stockframes = {}
+    for s in stocks:
+        if cfg.datasource == 1:
+            file = get_tdx_kline_file(s)
+            if file is None or not os.path.exists(file):
+                print('not found', file)
+                stockframes[s] = None
+                continue
+            try:
+                df = reader.get_df(file)
+                df = df.tail(cfg.ndays)
+            except:
+                stockframes[s] = None
+                printex('read frame error', file)
+                continue
+                pass
+        else:
+            try:
+                df = get_kdf_from_pkl(s)
+                df = df.tail(cfg.ndays)
+            except:
+                stockframes[s] = None
+                printex('read pickle error', s)
+                continue
+                pass
+        price_algo = calc_frame_price(df)
+        stockframes[s] = df
+
+    # calc frames index
+    fi = calc_ref_frameindex(stocks, stockframes)
+
+    # plot stock frames
     for s in stocks:
 
-        file = find_stock_kline_file(s)
-        if file is None or not os.path.exists(file):
-            print('not found', file)
+        df = stockframes[s]
+        if df is None:
             continue
 
-        try:
-            df = reader.get_df(file)
-            df = df.tail(ndays)
-        except:
-            print('read frame error', file)
+        if s != 300 and skip_stock_filter_by_index(df, fi):
             continue
-            pass
-
-        # print(df)
-        # print('before modify')
-        # print(df.iloc[:,p_index])
-        # print('-------------------------------')
-
-        # return algo name
-        price_algo = calc_frame_price(df)
-        # print('-------------------------------')
-        # print('after modify')
-        # print(df.iloc[:,p_index])
-        # exit(0)
-        # print(df.index[-1])
+        else:
+            stock_legends.append(s)
 
         if s == 300:
-            plt.plot(df.iloc[:, p_index], '.-k', linewidth=3, label=s)
-            plt.text(df.index[-1], df.iloc[-1, p_index] - 0.05, s if isinstance(s, str) else db_id_to_name(s),
+            plt.plot(df.iloc[:, 0].values, df.iloc[:, cfg.p_index].values, '.-k', linewidth=3, label=s)
+            plt.text(df.iloc[:, 0].values[-1], df.iloc[-1, cfg.p_index] - 0.05,
+                     s if isinstance(s, str) else db_id_to_name(s),
+                     color='gold',
+                     fontsize=9, alpha=0.8)
+            plt.plot(df.iloc[:, 0].values, fi, '.-b', linewidth=3, label=s)
+            plt.text(df.iloc[:, 0].values[-1], fi[-1] - 0.05,
+                     'index',
                      color='gold',
                      fontsize=9, alpha=0.8)
         else:
-            plt.plot(df.iloc[:, p_index], '.-', label=s)
-            plt.text(df.index[-1], df.iloc[-1, p_index] - 0.05, s if isinstance(s, str) else db_id_to_name(s),
+            plt.plot(df.iloc[:, 0].values, df.iloc[:, cfg.p_index].values, '.-', label=s)
+            plt.text(df.iloc[:, 0].values[-1], df.iloc[-1, cfg.p_index] - 0.05,
+                     s if isinstance(s, str) else db_id_to_name(s),
                      color='gray',
                      fontsize=9, alpha=0.8)
+
+        # break
         del df
 
     # plt.legend(stocks)
-    # plt.legend(bbox_to_anchor=(1.01,0.5), loc="center left")
+    plt.legend(bbox_to_anchor=(1.01, 0.5), loc="center left")
     if isinstance(stocks[0], str):
-        plt.legend(stocks, bbox_to_anchor=(1.01, 1), loc="upper left")
+        plt.legend(stock_legends, bbox_to_anchor=(1.01, 1), loc="upper left")
     else:
-        plt.legend([db_id_to_name(s) for s in stocks], bbox_to_anchor=(1.01, 1), loc="upper left")
+        plt.legend([db_id_to_name(s) for s in stock_legends], bbox_to_anchor=(1.01, 1), loc="upper left")
 
     plt.grid('on')
     plt.title(title + ' ({})'.format(price_algo))
     # plt.tight_layout()
 
-    save_file = r'{}\tdx_{}_{}_{}.png'.format(savepath, title, ndays, price_algo)
+    save_file = r'{}\tdx_{}_{}_{}.png'.format(cfg.savepath, title, cfg.ndays, price_algo)
     plt.savefig(save_file, bbox_inches="tight")
     print('save file:', save_file)
     # plt.show()
@@ -321,7 +504,7 @@ def test_stock_file():
 
         id = db_name_to_id(s[0])
         print(id)
-        print(tdx_id_to_klinefile(id))
+        print(get_tdx_kline_file(id))
 
     # plot_stocks()
     pass
@@ -341,14 +524,24 @@ def select_industry_stocks(industry):
 def plot_industry():
     conn = sqlite3.connect('stocks.db')
     ret = conn.execute('''select distinct industry from stockbasic''').fetchall()
+
+    index = 1
+    end = len(ret) - 1
     for r in ret[1:]:
         ind = r[0]
         print(ind)
         if ind is None:
             continue
         stocks = select_industry_stocks(ind)
-        plot_stocks(stocks, ndays, ind, r'.\tdx_kline')
-        print('plot {} finish'.format(ind))
+        t0 = time.time()
+        try:
+            plot_stocks(stocks, ind)
+        except:
+            printex('plot industry error:', ind)
+            pass
+        span = time.time() - t0
+        print('plot {} finish {}s {}/{} - algo {} - ndays {}'.format(ind, span, index, end, cfg.algo, cfg.ndays))
+        index = index + 1
 
 
 def read_user_dict():
@@ -377,18 +570,18 @@ def read_user_dict():
 
 @print_durations()
 def plot_dict():
+    cfg.savepath = r'.\tdx_user_kline'
     stock_lists = read_user_dict()
 
     for k, v in stock_lists.items():
-        plot_stocks(v, ndays, k, r'.\tdx_user_kline')
+        plot_stocks(v, k)
     pass
 
 
 @print_durations
 def plot_ndays():
     for n in [20, 30, 60, 120]:
-        global ndays
-        ndays = n
+        cfg.ndays = n
         plot_industry()
         # plot_dict()
 
@@ -398,21 +591,40 @@ import unittest
 
 class TestCase(unittest.TestCase):
 
+    @classmethod
+    def setUp(self) -> None:
+        init_ex()
+        pass
+
     @print_durations
     def plot(self):
+        cfg.savepath = '.'
         ind = '银行'
         stocks = select_industry_stocks(ind)
         print(stocks)
-        plot_stocks(stocks, 20, ind)
+        plot_stocks(stocks, ind)
 
     def test_plot_all(self):
-        global algo
-        for algo in [0, 1, 2, 3]:
+        cfg.ndays = 60
+        for cfg.algo in [1, 2, 3]:
             self.plot()
+
+    def tearDown(self) -> None:
+        save_ex()
 
 
 if __name__ == '__main__':
-    algo = 3
 
-    plot_ndays()
+    init_ex()
+    try:
+        # for algo in [1,2,3]:
+        #     plot_ndays()
+        cfg.savepath = r'.\output_kline'
+        cfg.algo = 3
+        cfg.ndays = 60
+        plot_industry()
+    except Exception as ex:
+        save_ex()
+        raise ex
+
     pass

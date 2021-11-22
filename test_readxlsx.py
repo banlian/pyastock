@@ -98,5 +98,11 @@ class Test_User(unittest.TestCase):
         pass
 
 
+    def test_read_pickle(self):
+        f = pd.read_pickle('a_stocks.pkl')
+        print(f)
+        pass
+
+
 if __name__ == '__main__':
     pass

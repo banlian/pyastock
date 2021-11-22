@@ -156,3 +156,4 @@ fabric.properties
 /temp
 *.png
 
+/rawdata/*.pkl
