@@ -4,11 +4,12 @@ import pandas as pd
 from pytdx.reader import TdxDailyBarReader
 
 import unittest
+import os
 
 
 class Test_Update(unittest.TestCase):
     def test_readpickl(self):
-        f = pd.read_pickle('sh.600036.pkl')
+        f = pd.read_pickle('sh.688630.pkl')
         f = f.tail(1)
         # print(f)
         # print(f.dtypes)
@@ -45,6 +46,8 @@ class Test_Update(unittest.TestCase):
                 return 'sz.{:0>6d}'.format(c)
             return 'sh.{:0>6d}'.format(c)
 
+        errors = []
+
         for index, r in df.iterrows():
             code = int(r['代码'][2:])
             open = r['开盘']
@@ -58,24 +61,37 @@ class Test_Update(unittest.TestCase):
             percent = r['涨幅']
 
             fcode = format_code(code)
-            if code == 600036:
-                print(code, open, high, low, close, price0, vol, amount, turn, percent)
-                df = pd.read_pickle('{}.pkl'.format(fcode))
-                if df.empty:
-                    print('dateframe empty', fcode)
-                    continue
-                if df.iloc[-1, 0] == date:
-                    print('date confilict', date)
-                    continue
-                s = {'date': date, 'code': fcode, 'open': open, 'high': high, 'low': low, 'close': close,
-                     'preclose': price0, 'volume': vol, 'amount': amount,
-                     'turn': turn, 'pctChg': percent}
-                print(df)
-                df = df.append(s, ignore_index=True)
-                df.to_csv(r'..\test.csv')
-                df.to_pickle('{}.pkl'.format(fcode))
-                print(df)
+            # print(code, open, high, low, close, price0, vol, amount, turn, percent)
 
+            pklfile = '{}.pkl'.format(fcode)
+            csvfile = '{}.csv'.format(fcode)
+            if not os.path.exists(pklfile):
+                print('not found', pklfile)
+                errors.append(pklfile)
+                continue
+
+            df = pd.read_pickle(pklfile)
+            if df.empty:
+                print('dateframe empty', fcode)
+                errors.append(fcode)
+                continue
+            if df.iloc[-1, 0] == date:
+                print('date confilict', fcode)
+                if not os.path.exists(csvfile):
+                    df.to_csv(csvfile)
+                continue
+            s = {'date': date, 'code': fcode, 'open': open, 'high': high, 'low': low, 'close': close,
+                 'preclose': price0, 'volume': vol, 'amount': amount,
+                 'turn': turn, 'pctChg': percent}
+            # print(df)
+            df = df.append(s, ignore_index=True)
+            df.to_csv('{}.csv'.format(fcode))
+            df.to_pickle('{}.pkl'.format(fcode))
+            print('update', fcode)
+            # print(df)
+
+        print('update pickle finish')
+        pass
 
     def test_read_tdx_day(self):
         reader = TdxDailyBarReader()

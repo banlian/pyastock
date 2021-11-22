@@ -60,10 +60,11 @@ def fetch_data(stocks):
         #### 结果集输出到csv文件 ####
         result.to_pickle('{}.pkl'.format(name))
         #result.to_csv(name, index=False)
-        print(s)
+        print(s,'success', result.empty, result.shape[0])
 
     #### 登出系统 ####
     bs.logout()
+    print('logout')
 
 
 def get_stocks_from_db():
@@ -90,13 +91,26 @@ import unittest
 class Test_Test(unittest.TestCase):
 
     def test_fetch(self):
-        fetch_data([600000])
+        stocks = [
+            688630,
+            688266,
+            301213,
+            301199,
+            301193,
+            301179,
+            301168,
+            300646,
+            300423,
+            2752,
+        ]
+
+        fetch_data(stocks)
 
     def test_readpickl(self):
 
         f = pd.read_pickle('sh.600036.pkl')
         f = f.tail(1)
-        # print(f)
+        print(f)
         # print(f.dtypes)
         # print(f['date'].dtype == 'datetime64[ns]')
 
