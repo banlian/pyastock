@@ -17,7 +17,7 @@ class Test_Update(unittest.TestCase):
         pass
 
     def test_read_xlsx(self):
-        excelfile = r'..\Table1122.xlsx'
+        excelfile = r'..\Table1123.xlsx'
 
         cols = ['开盘', '最高', '最低', '现价', '昨收', '总金额', '总手', '换手', '涨幅', ]
         df = pd.read_excel(excelfile)
@@ -28,11 +28,11 @@ class Test_Update(unittest.TestCase):
         print(df)
         print(df.columns)
         print(df.dtypes)
-        df.to_pickle('table1122.pkl')
+        df.to_pickle('table1123.pkl')
         # df = df.iloc[:,['代码','开盘','最高', '最低','现价', '总金额','总手','换手', '涨幅',]]
 
     def test_read_pkl(self):
-        df = pd.read_pickle('table1122.pkl')
+        df = pd.read_pickle('table1123.pkl')
         print(df.columns)
         print(df.dtypes)
 

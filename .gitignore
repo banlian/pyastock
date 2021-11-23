@@ -157,3 +157,8 @@ fabric.properties
 *.png
 
 /rawdata/*.pkl
+/rawdata/*.csv
+/*.csv
+/*.xls
+/*.xlsx
+/*.png
