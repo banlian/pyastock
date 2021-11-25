@@ -45,7 +45,7 @@ def update_industry_from_tdx_xlsx():
 def read_user():
     dict = {}
 
-    with open('ths_user_category.txt', 'r', encoding='utf8') as f:
+    with open('analysis_user.txt', 'r', encoding='utf8') as f:
         lines = f.readlines()
         lines = [l.strip('\r\n ') for l in lines]
         lines = [l for l in lines if len(l) > 0]

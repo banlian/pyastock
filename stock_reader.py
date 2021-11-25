@@ -38,9 +38,9 @@ def get_kdf_from_tdx(s):
     return f
 
 
-def get_kdf_from_pkl(s):
+def get_kdf_from_pkl(s, isdate = True):
     if not isinstance(s, int):
-        printex('get pickle error, stock is not int', s)
+        # printex('get pickle error, stock is not int', s)
         temp = s
         s = db_name_to_id(s)
         if s is None:
@@ -53,7 +53,8 @@ def get_kdf_from_pkl(s):
         return None
 
     f = pd.read_pickle(file)
-    f['date'] = pd.to_datetime(f['date'])
+    if isdate:
+        f['date'] = pd.to_datetime(f['date'])
     return f
 
 

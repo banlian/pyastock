@@ -150,6 +150,7 @@ def plot_industry():
 @print_durations()
 def plot_dict():
     cfg.savepath = r'.\tdx_user_kline'
+
     stock_lists = read_user_dict()
 
     for k, v in stock_lists.items():

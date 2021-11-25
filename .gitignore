@@ -162,3 +162,5 @@ fabric.properties
 /*.xls
 /*.xlsx
 /*.png
+/output_quant/
+/output_kline/

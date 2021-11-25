@@ -21,14 +21,13 @@ class cfg(object):
 
 exceptions = []
 
-
+exfile = None
 
 def init_ex():
-    global exfile
+    exceptions = []
     exfile = open('plot_exception.log', 'w')
     printex('init ex')
     pass
-
 
 def printex(*args):
     print(args, file=exfile)
@@ -39,11 +38,8 @@ def save_ex():
     exfile.close()
 
 
-
-
 def get_days(ndays):
     days = []
-    end = datetime.datetime.today()
     for i in range(ndays):
         day = datetime.datetime.today() - datetime.timedelta(days=i)
         days.append(datetime.datetime(day.year, day.month, day.day))
