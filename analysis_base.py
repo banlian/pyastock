@@ -5,6 +5,10 @@ from stock_reader import get_kdf_from_pkl
 
 
 def track_to_csv(title, stocks, ndays):
+    """
+    输出stocks最近n天内涨幅和股价数据到csv
+    """
+
     days = get_days(ndays)
     with open('analysis_stock_track_{}.csv'.format(title), 'w', encoding='utf8') as csv:
 
@@ -15,9 +19,10 @@ def track_to_csv(title, stocks, ndays):
                 print('read df error', s)
                 continue
 
-            csv.write('{},{}'.format(s,db_id_to_name(s)))
+            csv.write('{},{}'.format(s, db_id_to_name(s)))
             df = df.tail(len(days) + 1)
 
+            # 第一行 输出股价
             for d in days:
                 datestr = d.strftime('%Y-%m-%d')
                 print(datestr)
@@ -34,6 +39,7 @@ def track_to_csv(title, stocks, ndays):
                     csv.write(',')
             csv.write('\r\n')
 
+            # 第二行 输出涨幅
             csv.write(',')
 
             for d in days:
@@ -55,9 +61,10 @@ def track_to_csv(title, stocks, ndays):
         csv.flush()
 
 
-
 def track_to_plot(title, stocks, ndays):
+    """
+    输出最近n天的股价涨幅图形
+    """
     cfg.ndays = ndays
     cfg.savepath = '.'
     plot_stocks(stocks, title='analysis_stock_track_{}'.format(title))
-

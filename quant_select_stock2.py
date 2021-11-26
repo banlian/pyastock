@@ -10,7 +10,7 @@ from stock_reader import get_kdf_from_pkl
 
 class UserSelectAlgo1(SelectFuncObj):
     """
-    地位突破
+    低位突破
     """
 
     def __init__(self):

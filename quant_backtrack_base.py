@@ -3,6 +3,20 @@ from quant_base import read_quant_output_stocks
 from stock_core import cfg
 from stock_reader import get_kdf_from_pkl
 
+import pandas as pd
+
+def get_stock_trade_days(ndays):
+    """
+        from pick file index 获取交易日
+    """
+    pkl = pd.read_pickle(r'./rawdata/sh.600000.pkl')
+    days = pkl.loc[:, 'date'].values[-ndays:]
+    days = list(days)
+
+    return days
+    pass
+
+
 
 def quant_output_probality(stocks: list[int], date='', offset=0):
     """
