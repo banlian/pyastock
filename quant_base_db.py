@@ -9,6 +9,22 @@ def all_stocksid():
     return db_select_stockids()
 
 
+def stocksource_hs300():
+    pass
+
+
+def stocksource_zz500():
+    pass
+
+
+def stocksource_bk(bkname):
+    pass
+
+
+def stocksource_industry():
+    pass
+
+
 def marketvalue(s):
     """
     市值
@@ -17,15 +33,3 @@ def marketvalue(s):
     pass
 
 
-def turn(df, date=''):
-    """
-    换手率
-    """
-    v = df.loc[df['date'] == date, 'turn']
-    if v.empty:
-        return 0
-    try:
-        return float(v.values[0])
-        pass
-    except:
-        return 0

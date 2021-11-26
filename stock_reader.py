@@ -49,7 +49,7 @@ def get_kdf_from_pkl(s, isdate = True):
 
     file = r'.\rawdata\{}.pkl'.format(get_pkl_filename(s))
     if not os.path.exists(file):
-        printex('find pickel error', s)
+        # printex('find pkl error', s)
         return None
 
     f = pd.read_pickle(file)
@@ -115,7 +115,7 @@ def get_pkl_filename(s):
     if s < 10000 or (399999 > s > 300000):
         return 'sz.{0:0>6d}'.format(s)
 
-    printex('get_pkl_filename error: stock over range ', s)
+    # printex('get_pkl_filename error: stock over range ', s)
     return None
 
 

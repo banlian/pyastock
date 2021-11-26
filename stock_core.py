@@ -7,8 +7,10 @@ class cfg(object):
     # a_index = 4
 
     # pickle 索引
-    p_index = 4
-    a_index = 6
+    # datetime 作为第0列
+    # date,code, open,high,low,close, preclose, vol,amount, adj, turn, status, pctChg, isST
+    p_index = 5
+    a_index = 7
     algo = 3
     savepath = r'.\tdx_kline'
     enable_filter = False
@@ -16,6 +18,7 @@ class cfg(object):
     # tdx = 1  pickle = 2
     datasource = 2
     pass
+
 
 
 

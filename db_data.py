@@ -5,7 +5,7 @@ import pandas as pd
 
 def update_market_value():
 
-    df = pd.read_excel(r'.\Table1122.xlsx')
+    df = pd.read_excel(r'.\temp\Table1122.xlsx')
     df.to_pickle('table1122.pkl')
 
     df = df[['    名称','总市值']]
@@ -17,7 +17,7 @@ def update_market_value():
         name = r[1][0]
         if r[1][1] == '--':
             continue
-        value = float(r[1][1])/10000000.0 # e
+        value = float(r[1][1])/100000000.0 # e
 
         conn.execute('''update STOCKBASIC set marketvalue = {} where name='{}' '''.format(value, name))
 

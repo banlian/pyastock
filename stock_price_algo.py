@@ -52,7 +52,7 @@ def base_price_algo(frame):
 
 def center_of_mass_algo(frame):
     """
-    计算股价重心
+    计算股价重心 todo
     """
     prices = frame.iloc[:, cfg.p_index].values
     amount = frame.iloc[:, cfg.a_index].values
