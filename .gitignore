@@ -164,3 +164,6 @@ fabric.properties
 /*.png
 /output_quant/
 /output_kline/
+
+/eqdata/*.pkl
+/eqdata/*.csv

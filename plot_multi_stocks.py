@@ -19,7 +19,6 @@ width, height = 25, 12.5
 plt.rcParams['figure.figsize'] = width, height
 
 
-
 @print_durations()
 def plot_stocks(stocks, title=''):
     """
@@ -167,6 +166,7 @@ def plot_ndays():
 
 
 import unittest
+
 
 class TestCase(unittest.TestCase):
 
