@@ -4,8 +4,8 @@ import os
 from pytdx.reader import TdxDailyBarReader
 
 
-from stock_core import printex, get_days
-from stock_db import db_name_to_id
+from stockbase.stock_core import printex, get_days
+from stockbase.stock_db import db_name_to_id
 
 
 def get_df_ndays(df, ndays):

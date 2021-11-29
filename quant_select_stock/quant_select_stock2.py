@@ -1,4 +1,4 @@
-from quant_select_stock_base import *
+from quant.quant_select_stock_base import *
 
 
 class UserSelectAlgo1(SelectFuncObj):

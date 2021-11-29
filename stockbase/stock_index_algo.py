@@ -1,4 +1,4 @@
-from stock_core import cfg
+from stockbase.stock_core import cfg
 
 
 def calc_ref_frameindex(stocks, stockframes, days):

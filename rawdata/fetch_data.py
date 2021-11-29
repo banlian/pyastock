@@ -103,7 +103,7 @@ def fetch_index(name):
 
 
 def get_stocks_from_db():
-    conn = sqlite3.connect(r'..\stocks.db')
+    conn = sqlite3.connect(r'../stockbase/stocks.db')
 
     return [s[0] for s in conn.execute('select number from stocks').fetchall()]
 
@@ -158,7 +158,7 @@ class Test_Test(unittest.TestCase):
 
     def test_check_pickle_files(self):
 
-        conn = sqlite3.connect(r'..\stocks.db')
+        conn = sqlite3.connect(r'../stockbase/stocks.db')
         stocks = [s[0] for s in conn.execute('''select number from stocks''').fetchall()]
         for s in stocks:
             if not os.path.exists(r'.\{}.pkl'.format(get_stock_pickle_name(s))):

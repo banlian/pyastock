@@ -11,7 +11,7 @@ def update_market_value():
     df = df[['    名称','总市值']]
     print(df)
 
-    conn = sqlite3.connect('stocks.db')
+    conn = sqlite3.connect('stockbase/stocks.db')
 
     for r in df.iterrows():
         name = r[1][0]

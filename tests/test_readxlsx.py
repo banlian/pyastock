@@ -1,7 +1,7 @@
 import sqlite3
 import pandas as pd
 
-dbfile = 'stocks.db'
+dbfile = 'stock/stocks.db'
 
 
 def read_xls():
@@ -14,7 +14,7 @@ def read_stocks():
     conn = sqlite3.connect(dbfile)
     ret = conn.execute('''select distinct industry from stockbasic''').fetchall()
     print(ret)
-    with open('ind.txt', 'w') as fs:
+    with open('../ind.txt', 'w') as fs:
         for r in ret:
             fs.write('{}'.format(str(r[0]).encode('utf').decode('utf')))
             fs.write('\r\n')
@@ -22,7 +22,7 @@ def read_stocks():
 
 
 def update_industry_from_tdx_xlsx():
-    df = pd.read_pickle('a_stocks.pkl')
+    df = pd.read_pickle('../a_stocks.pkl')
     # print(df)
     frame = df.iloc[:, [0, 1, 13]]
     conn = sqlite3.connect(dbfile)
@@ -45,7 +45,7 @@ def update_industry_from_tdx_xlsx():
 def read_user():
     dict = {}
 
-    with open('analysis_user.txt', 'r', encoding='utf8') as f:
+    with open('../analysis_user.txt', 'r', encoding='utf8') as f:
         lines = f.readlines()
         lines = [l.strip('\r\n ') for l in lines]
         lines = [l for l in lines if len(l) > 0]
@@ -99,7 +99,7 @@ class Test_User(unittest.TestCase):
 
 
     def test_read_pickle(self):
-        f = pd.read_pickle('a_stocks.pkl')
+        f = pd.read_pickle('../a_stocks.pkl')
         print(f)
         pass
 

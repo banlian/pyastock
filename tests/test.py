@@ -28,7 +28,7 @@ class Test_T(unittest.TestCase):
         print(max(days))
 
     def test_get_df_ndays(ndays):
-        df = pd.read_pickle(r'.\rawdata\sh.600036.pkl')
+        df = pd.read_pickle(r'../rawdata/sh.600036.pkl')
         print(df.dtypes)
         df['date'] = pd.to_datetime(df['date'])
         # print(df.dtypes)

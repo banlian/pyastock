@@ -6,7 +6,7 @@ import sqlite3
 def create_stocks(args):
     
 
-    conn = sqlite3.connect('stocks.db')
+    conn = sqlite3.connect('../stockbase/stocks.db')
     print ("Opened database successfully")
     c = conn.cursor()
     c.execute(r'''CREATE TABLE STOCKS
@@ -29,7 +29,7 @@ def import_stock_names():
 
     files = [shfile, szfile]
 
-    conn = sqlite3.connect('stocks.db')
+    conn = sqlite3.connect('../stockbase/stocks.db')
     print ("Opened database successfully")
 
     conn.execute('''delete from stocks''')
@@ -71,7 +71,7 @@ def import_stock_names():
 
 
 def stock_db_test():
-    conn = sqlite3.connect('stocks.db')
+    conn = sqlite3.connect('../stockbase/stocks.db')
     print ("Opened database successfully")
 
     try:

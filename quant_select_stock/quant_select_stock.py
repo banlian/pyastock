@@ -1,6 +1,6 @@
 from quant_backtrack.quant_backtrack_select_stocks import quant_plot_stocks
-from quant_select_stock_base import *
-from stock_core import cfg
+from quant.quant_select_stock_base import *
+from stockbase.stock_core import cfg
 
 
 def select_max_percent():

@@ -1,4 +1,3 @@
-import pandas as pd
 from funcy import print_durations
 
 import time

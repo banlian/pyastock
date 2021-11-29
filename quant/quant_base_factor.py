@@ -1,4 +1,4 @@
-from stock_core import cfg
+from stockbase.stock_core import cfg
 import pandas as pd
 import math
 import numpy as np
@@ -6,8 +6,8 @@ from pandas import DataFrame
 
 import talib as ta
 
-from stock_core import *
-from stock_reader import get_kdf_from_pkl
+from stockbase.stock_core import *
+from stockbase.stock_reader import *
 
 
 def get_prices(df, ndays, offset: int = 0):
@@ -52,7 +52,7 @@ def factor_ma(df, ndays, offset: int = 0):
 
 
 def ta_ma(df, ndays, offset=0):
-    return ta.MA(df.loc[:,'close'], timeperiod=ndays)
+    return ta.MA(df.loc[:, 'close'], timeperiod=ndays)
 
 
 def factor_max_price(df, ndays, offset: int = 0):

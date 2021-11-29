@@ -1,6 +1,7 @@
 import sqlite3
 
 
+
 def db_name_to_id(name):
     """
     find stock id from db name-id dict
@@ -18,7 +19,6 @@ def db_name_to_id(name):
             return None
 
 
-
 def db_id_to_industry(id):
     """
     find stock id from db name-id dict
@@ -34,6 +34,7 @@ def db_id_to_industry(id):
             return res[0][0]
         else:
             return ''
+
 
 def db_id_to_name(id):
     """
@@ -58,11 +59,13 @@ def db_select_stocks():
         res = db.fetchall()
     return [r[0] for r in res]
 
+
 def db_select_stockids():
     with sqlite3.connect('stocks.db') as conn:
         db = conn.execute('''select symbol from STOCKBASIC'''.format(id))
         res = db.fetchall()
     return [r[0] for r in res]
+
 
 def db_select_marketval(s):
     with sqlite3.connect('stocks.db') as conn:

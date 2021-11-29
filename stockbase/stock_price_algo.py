@@ -2,7 +2,7 @@
 import math
 import pandas as pd
 
-from stock_core import *
+from stockbase.stock_core import *
 
 
 def calc_frame_price(frame):

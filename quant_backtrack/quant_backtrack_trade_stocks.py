@@ -1,5 +1,5 @@
-from quant_backtrack_base import *
-from quant_select_stock.quant_base_factor import *
+from quant.quant_backtrack_base import *
+from quant.quant_base_factor import *
 
 
 class Trade(object):

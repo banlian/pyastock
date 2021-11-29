@@ -1,8 +1,8 @@
-from quant_base import *
-from quant_base_db import *
-from quant_base_factor import *
-from stock_db import *
-from stock_reader import *
+from quant.quant_base import *
+from quant.quant_base_db import *
+from quant.quant_base_factor import *
+from stockbase.stock_db import *
+from stockbase.stock_reader import *
 
 
 class SelectFuncObj(object):

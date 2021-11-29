@@ -1,4 +1,4 @@
-from stock_db import db_select_stocks, db_select_stockids, db_select_marketval
+from stockbase.stock_db import *
 
 
 def all_stocks():
@@ -33,3 +33,9 @@ def marketvalue(s):
     pass
 
 
+import unittest
+class Test_db(unittest.TestCase):
+
+
+    def test_mv(self):
+        print(marketvalue(600036))

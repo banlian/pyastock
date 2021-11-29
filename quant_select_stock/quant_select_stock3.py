@@ -1,6 +1,6 @@
-from quant_backtrack.quant_backtrack_base import *
-from quant_select_stock_base import *
-from stock_reader import get_kdf_from_pkl
+from quant.quant_backtrack_base import *
+from quant.quant_select_stock_base import *
+from stockbase.stock_reader import get_kdf_from_pkl
 
 from MyTT import *
 

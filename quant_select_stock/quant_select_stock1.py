@@ -1,7 +1,5 @@
-from quant_base_db import *
-from quant_base_factor import *
-from quant_base_algo import *
-from quant_select_stock_base import *
+from quant.quant_base_algo import *
+from quant.quant_select_stock_base import *
 
 
 class UserSelecFunc(SelectFuncObj):
@@ -44,5 +42,5 @@ if __name__ == '__main__':
     us = UserSelecFunc()
     us.date = '2021-11-25'
 
-    quant_run_select_stocks([us])
+    quant_run_select_stocks([us],0)
     pass

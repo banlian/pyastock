@@ -1,8 +1,8 @@
 import datetime
 
-from stock_core import cfg
-from stock_db import *
-from stock_reader import *
+from stockbase.stock_core import cfg
+from stockbase.stock_db import *
+from stockbase.stock_reader import *
 
 
 class qcfg(object):
