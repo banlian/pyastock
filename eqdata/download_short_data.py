@@ -1,6 +1,6 @@
-from eqdata.Ashare import *
-from quant_select_stock.quant_select_stock3 import UserRsiPriceAlgo
-from stock_db import *
+from Ashare import *
+from quant_select_stock.quant_select_stock_3_rsi import UserRsiPriceAlgo
+from stockbase.stock_db import *
 
 
 class EXCHANGE(object):
@@ -55,7 +55,7 @@ def normalize_code(symbol, pre_close=None):
     return ret_normalize_code
 
 
-def read_codes():
+def read_codes_nomalized():
     with open('short.txt', 'r', encoding='utf-8') as fs:
         lines = fs.readlines()
         lines = [l.strip('\r\n ') for l in lines]
@@ -64,24 +64,34 @@ def read_codes():
 
 
 def read_codes2():
-    with open(r'eqdata\short.txt', 'r', encoding='utf-8') as fs:
+    with open(r'short.txt', 'r', encoding='utf-8') as fs:
         lines = fs.readlines()
         lines = [l.strip('\r\n ') for l in lines]
         lines = [l for l in lines if len(l) > 0]
     return lines
 
 
-def read_data(codes):
+def download_data_60m(codes):
     for c in codes:
         dc = 5 * 4 * 2
         df = get_price(c, frequency='60m', count=dc)  # 分钟线实时行情，可用'1m','5m','15m','30m','60m'
         print('{}60分钟线\n'.format(c), df)
         df = df.reset_index()
         df.rename({'': 'date'}, axis=1, inplace=True)
-        print(df.columns)
+        print(df.shape[0])
         df.to_pickle('{}.pkl'.format(c[0:6]))
+        df.to_csv('{}.csv'.format(c[0:6]))
         pass
 
+def download_data_day(codes):
+    for c in codes:
+        df = get_price(c, frequency='1d', count=360)  # 分钟线实时行情，可用'1m','5m','15m','30m','60m'
+        print('{} 日线\n'.format(c), df)
+        df = df.reset_index()
+        df.rename({'': 'date'}, axis=1, inplace=True)
+        print(df.shape[0])
+        df.to_pickle('{}.pkl'.format(c))
+        df.to_csv('{}.csv'.format(c))
 
 # def read_data2(codes):
 #     for c in codes:
@@ -98,11 +108,14 @@ import unittest
 class Test_Data(unittest.TestCase):
 
     def test_read_code(self):
-        codes = read_codes()
+        codes = read_codes2()
         print(codes)
 
     def test_download(self):
-        read_data(read_codes())
+        download_data_60m(read_codes_nomalized())
+        pass
+    def test_download_index(self):
+        download_data_day(['sh000001','sh000300'])
         pass
 
     def test_select_stock(self):
@@ -116,7 +129,7 @@ class Test_Data(unittest.TestCase):
         print(df.columns)
         pass
 
-    def test_select_stock(self):
+    def test_select_stock2(self):
         stocks = read_codes2()
 
         algo = UserRsiPriceAlgo()
@@ -127,7 +140,7 @@ class Test_Data(unittest.TestCase):
 
         for s in stocks:
 
-            df = pd.read_pickle('eqdata\{}.pkl'.format(s))
+            df = pd.read_pickle('{}.pkl'.format(s))
 
             if algo.run(df, int(s), -1):
                 selected.append((int(s), algo.ret))

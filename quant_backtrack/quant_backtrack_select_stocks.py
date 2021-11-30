@@ -1,5 +1,7 @@
 from quant.quant_backtrack_base import *
-from quant_select_stock.quant_select_stock2 import *
+from quant.quant_base import *
+from quant.quant_select_stock_base import quant_run_select_stocks
+import quant_select_stock.quant_select_stock_2_macross
 
 
 def back_track_select_stocks():
@@ -17,7 +19,7 @@ def back_track_select_stocks():
         print(day, select_date)
 
         # select stocks
-        select_funs = [UserSelectAlgo1()]
+        select_funs = [quant_select_stock.quant_select_stock2.UserSelectAlgo1()]
         algo = ''
 
         results = quant_run_select_stocks(select_funs, select_date, algo, day)

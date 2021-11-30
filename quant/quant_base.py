@@ -58,18 +58,21 @@ def quant_select_result_stat(day, stocks, percents):
 def quant_select_save(file, results, percents=None):
     if percents is None or len(percents) == 0:
         with open(file, 'w', encoding='utf-8') as fs:
-            fs.write('id,stock,industry, info\r\n')
+            fs.write('id,stock,industry,info\n')
             for r in results:
-                fs.write('{},{},{},{}\r\n'.format(r[0], db_id_to_name(r[0]), db_id_to_industry(r[0]), r[1]))
+                fs.write('{},{},{},{}\n'.format(r[0], db_id_to_name(r[0]), db_id_to_industry(r[0]), r[1]))
             pass
+            fs.write(file)
+
     else:
         with open(file, 'w', encoding='utf-8') as fs:
             fs.write('id,stock,industry,info,percents\r\n')
             for r in results:
-                fs.write('{},{},{},{},{}\r\n'.format(r[0], db_id_to_name(r[0]), db_id_to_industry(r[0]), r[1], percents[results.index(r)]))
+                fs.write('{},{},{},{},{}\n'.format(r[0], db_id_to_name(r[0]), db_id_to_industry(r[0]), r[1], percents[results.index(r)]))
 
-            fs.write(quant_select_result_stat('', [r[0] for r in results], percents) + '\r\n')
+            fs.write(quant_select_result_stat('', [r[0] for r in results], percents) + '\n')
             pass
+            fs.write(file)
     pass
 
 

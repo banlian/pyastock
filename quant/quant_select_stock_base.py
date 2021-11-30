@@ -34,26 +34,6 @@ class MarketValLimit(SelectFuncObj):
     pass
 
 
-class MaxPercent(SelectFuncObj):
-    """
-    几日内最大涨幅
-    """
-
-    def __init__(self):
-        super(MaxPercent, self).__init__()
-        self.days = 3
-        self.max_percent = 75
-
-    def run(self, df, s, dayoffset):
-        p = price_increase_percent(df, self.days, dayoffset)
-        if p >= self.max_percent:
-            self.ret = str(p)
-            return True
-        return False
-
-    pass
-
-
 class MaCross(SelectFuncObj):
     """
     均线穿越
@@ -96,7 +76,7 @@ class AboveMa(SelectFuncObj):
         return False
 
 
-def quant_run_select_stocks(func_list: list[SelectFuncObj], dayoffset: int, algo='default', date=''):
+def quant_run_select_stocks(func_list: list[SelectFuncObj], dayoffset: int, algo='default'):
     """
     量化选股
     """
@@ -107,11 +87,17 @@ def quant_run_select_stocks(func_list: list[SelectFuncObj], dayoffset: int, algo
     info = '-'.join([f.desc for f in func_list])
     print('run', info)
 
+    day = datetime.datetime.today()
+
     for s in stocks:
         df = get_kdf_from_pkl(s)
         if df is None or df.empty:
             print('df none', s)
             continue
+
+        day = df['date'].iloc[-1 + dayoffset]
+        if stocks.index(s) == 0:
+            print('quant select date:', day)
 
         r = True
         for f in func_list:
@@ -132,17 +118,17 @@ def quant_run_select_stocks(func_list: list[SelectFuncObj], dayoffset: int, algo
     print('\n{}\nfound {} stocks!'.format(info, len(results)))
     print('finish')
 
-    quant_select_save('quant_select_stock_{}_{}.csv'.format(algo, date), results)
+    quant_select_save('quant_select_stock_{}_{}.csv'.format(algo, day.strftime('%Y-%m-%d')), results)
 
     return results
     pass
 
 
-import unittest
-
-
-class Test_QuantBase(unittest.TestCase):
-
-    def test_select(self):
-        quant_run_select_stocks([MaxPercent()], -2, '', '')
-        pass
+# import unittest
+#
+#
+# class Test_QuantBase(unittest.TestCase):
+#
+#     def test_select(self):
+#         quant_run_select_stocks([MaxPercent()], -2, '', '')
+#         pass

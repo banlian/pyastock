@@ -1,7 +1,7 @@
 from analysis_base import track_to_csv, track_to_plot
-from quant_base import read_quant_output_stocks
+from quant.quant_base import read_quant_output_stocks
 
-from stock_user_dict import *
+from stockbase.stock_user_dict import *
 
 
 def stock_track():

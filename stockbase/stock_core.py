@@ -12,33 +12,12 @@ class cfg(object):
     p_index = 5
     a_index = 7
     algo = 3
-    savepath = r'.\tdx_kline'
+    savepath = r'..\tdx_kline'
     enable_filter = False
     ndays = 60
     # tdx = 1  pickle = 2
     datasource = 2
     pass
-
-
-
-
-exceptions = []
-
-exfile = None
-
-def init_ex():
-    exceptions = []
-    exfile = open('plot_exception.log', 'w')
-    printex('init ex')
-    pass
-
-def printex(*args):
-    print(args, file=exfile)
-
-
-def save_ex():
-    printex('save ex')
-    exfile.close()
 
 
 def get_days(ndays):

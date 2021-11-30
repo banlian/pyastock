@@ -5,13 +5,13 @@ import pandas as pd
 
 def update_market_value():
 
-    df = pd.read_excel(r'.\temp\Table1122.xlsx')
+    df = pd.read_excel(r'.\temp\Table1129.xlsx')
     df.to_pickle('table1122.pkl')
 
     df = df[['    名称','总市值']]
     print(df)
 
-    conn = sqlite3.connect('stockbase/stocks.db')
+    conn = sqlite3.connect('stocks.db')
 
     for r in df.iterrows():
         name = r[1][0]

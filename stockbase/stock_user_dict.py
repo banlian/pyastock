@@ -2,7 +2,7 @@
 
 def read_user_dict():
     dict = {}
-    with open('analysis_user.txt', 'r', encoding='utf8') as f:
+    with open('..analysis_user.txt', 'r', encoding='utf8') as f:
         lines = f.readlines()
         lines = [l.strip('\r\n ') for l in lines]
         lines = [l for l in lines if len(l) > 0]

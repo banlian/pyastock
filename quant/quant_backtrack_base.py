@@ -1,7 +1,6 @@
 from plot_multi_stocks import plot_stocks
-from quant_base import read_quant_output_stocks
-from stock_core import cfg
-from stock_reader import get_kdf_from_pkl
+from quant.quant_base import read_quant_output_stocks
+from stockbase.stock_core import cfg
 
 import pandas as pd
 
@@ -10,7 +9,7 @@ def get_trade_days(ndays):
     """
         from pick file index 获取交易日
     """
-    pkl = pd.read_pickle(r'rawdata/sh.000001.pkl')
+    pkl = pd.read_pickle(r'../rawdata/sh.000001.pkl')
     days = pkl.loc[:, 'date'].values[-ndays:]
     days = list(days)
 
@@ -21,7 +20,7 @@ def get_trade_day(dayoff):
     """
         from pick file index 获取交易日
     """
-    pkl = pd.read_pickle(r'rawdata/sh.000001.pkl')
+    pkl = pd.read_pickle(r'../rawdata/sh.000001.pkl')
     days = pkl.loc[:, 'date'].values[dayoff]
     return days
     pass

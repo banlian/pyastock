@@ -42,12 +42,12 @@ class UserRsiPriceAlgo(SelectFuncObj):
                     self.ret = 'triggered rsi:{:.2f}-c:{:.2f}-pct:{:.2f}'.format(r, close, diff)
                     return True
             else:
-                if low <= r:
-                    self.ret = 'triggered rsi:{:.2f}-c:{:.2f}-pct:{:.2f}'.format(r, close, diff)
-                else:
-                    self.ret = 'rsi:{:.2f}-c:{:.2f}-pct:{:.2f}'.format(r, close, diff)
-                return True
-
+                if close >= r:
+                    if low <= r:
+                        self.ret = 'triggered rsi:{:.2f}-c:{:.2f}-pct:{:.2f}'.format(r, close, diff)
+                    else:
+                        self.ret = 'rsi:{:.2f}-c:{:.2f}-pct:{:.2f}'.format(r, close, diff)
+                    return True
         return False
 
     pass

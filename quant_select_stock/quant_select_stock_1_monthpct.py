@@ -3,10 +3,11 @@ from stockbase.stock_core import cfg
 
 from calendar import monthrange
 
+
 def get_month_days(year, month):
     num_days = monthrange(year, month)[1]
 
-    date = datetime.datetime(year, month,1)
+    date = datetime.datetime(year, month, 1)
 
     days = []
     for i in range(num_days):
@@ -17,9 +18,9 @@ def get_month_days(year, month):
     pass
 
 
-class UserMaxPercentPerMonth(SelectFuncObj):
+class MaxPctMonth(SelectFuncObj):
     def __init__(self):
-        super(UserMaxPercentPerMonth, self).__init__()
+        super(MaxPctMonth, self).__init__()
         self.desc = '每月涨幅'
         self.threshold = 50
         self.month = 11
@@ -29,7 +30,7 @@ class UserMaxPercentPerMonth(SelectFuncObj):
         # if not 50 < mv < 5000:
         #     return False
 
-        days = get_month_days(2021,self.month)
+        days = get_month_days(2021, self.month)
         days = [d.strftime('%Y-%m-%d') for d in days]
 
         df = df.loc[df['date'].isin(days)]
@@ -48,13 +49,14 @@ class UserMaxPercentPerMonth(SelectFuncObj):
 
 
 import unittest
-class Test_MaxPSelect(unittest.TestCase):
 
+
+class Test_MaxPSelect(unittest.TestCase):
 
     def test_select(self):
         df = pd.read_pickle(r'..\rawdata\sh.000001.pkl')
 
-        f = UserMaxPercentPerMonth()
+        f = MaxPctMonth()
 
         r = f.run(df, 1, 0)
         print(r)
@@ -63,23 +65,24 @@ class Test_MaxPSelect(unittest.TestCase):
         pass
 
     def test_enum_months(self):
-        for i in range(6,12):
+        for i in range(6, 12):
             t = '2011-{:0>2d}'.format(i)
-            algo = UserMaxPercentPerMonth()
+            algo = MaxPctMonth()
             algo.month = i
             algo.threshold = 75
             results = quant_run_select_stocks([algo], 0, 'month_pct')
-            stocks = [int(r[0]) for r in results]
-            quant_select_save('quant_select_stock_maxpct_result_{}.csv'.format(t), results)
+
 
 
 if __name__ == '__main__':
 
     for i in range(6, 12):
         t = '2011-{:0>2d}'.format(i)
-        algo = UserMaxPercentPerMonth()
+        algo = MaxPctMonth()
         algo.month = i
         algo.threshold = 50
+
         results = quant_run_select_stocks([algo], 0, 'month_pct')
+
         stocks = [int(r[0]) for r in results]
-        quant_select_save('quant_select_stock_maxpct_result_{}.csv'.format(t), results)
+        print(stocks)

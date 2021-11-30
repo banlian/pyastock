@@ -96,7 +96,7 @@ def update_pickle_by_ths_df(df, date=None):
         dfu.to_csv('{}.csv'.format(fcode))
         dfu.to_pickle('{}.pkl'.format(fcode))
         # print('append finish ', fcode)
-        # print(df)
+        print('update', index)
 
     try:
         with open('fetch_update_data_by_xlsx.log', 'w') as fs:
@@ -170,6 +170,6 @@ def update_pickle():
 
 
 if __name__ == '__main__':
-    update_pickle()
-    print('update success')
+    df = read_ths_xlsx_to_df(os.path.abspath('../temp/Table1130.xlsx'))
+    update_pickle_by_ths_df(df, '2021-11-30')
     pass

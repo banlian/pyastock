@@ -1,0 +1,25 @@
+id,stock,industry,info
+567,海德股份,多元金融,max pct slope:1.16 pct:30.77
+2374,中锐股份,广告包装,max pct slope:1.8 pct:42.53
+2537,海联金汇,汽车配件,max pct slope:1.15 pct:30.27
+2805,丰元股份,化工原料,max pct slope:1.51 pct:32.61
+2825,纳尔股份,化工原料,max pct slope:0.68 pct:15.32
+3043,华亚智能,专用机械,max pct slope:0.81 pct:16.72
+300048,合康新能,电气设备,max pct slope:0.74 pct:17.75
+300289,利德曼,生物制药,max pct slope:0.73 pct:21.54
+300636,同和药业,化学制药,max pct slope:0.72 pct:14.65
+301065,本立科技,化工原料,max pct slope:1.11 pct:28.45
+301075,多瑞医药,化学制药,max pct slope:0.79 pct:21.87
+600184,光电股份,专用机械,max pct slope:1.38 pct:33.36
+600301,*ST南化,商贸代理,max pct slope:0.93 pct:22.97
+600856,*ST中天,供气供热,max pct slope:1.24 pct:27.46
+603300,华铁应急,多元金融,max pct slope:0.69 pct:16.68
+603387,基蛋生物,医疗保健,max pct slope:0.77 pct:16.32
+603398,邦宝益智,文教休闲,max pct slope:0.99 pct:26.41
+603665,康隆达,纺织,max pct slope:0.85 pct:21.1
+603949,雪龙集团,汽车配件,max pct slope:1.05 pct:25.81
+603982,泉峰汽车,汽车配件,max pct slope:1.03 pct:31.08
+605116,奥锐特,化学制药,max pct slope:2.32 pct:56.01
+688272,富吉瑞,元器件,max pct slope:0.8 pct:20.76
+688359,三孚新科,化工原料,max pct slope:0.91 pct:20.37
+quant_select_stock_daypctslope_2021-11-30.csv

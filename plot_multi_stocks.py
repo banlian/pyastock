@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 
 from pylab import mpl
 
-from stock_db import *
-from stock_index_algo import *
-from stock_price_algo import *
-from stock_reader import *
-from stock_user_dict import read_user_dict
+from stockbase.stock_db import *
+from stockbase.stock_index_algo import *
+from stockbase.stock_price_algo import *
+from stockbase.stock_reader import *
+from stockbase.stock_user_dict import read_user_dict
 
 mpl.rcParams['font.sans-serif'] = ['SimHei']
 mpl.rcParams['axes.unicode_minus'] = False

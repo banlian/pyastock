@@ -2,13 +2,13 @@ from quant.quant_base_algo import *
 from quant.quant_select_stock_base import *
 
 
-class UserSelecFunc(SelectFuncObj):
+class MA_Increase(SelectFuncObj):
 
     def __init__(self):
-        super(UserSelecFunc, self).__init__()
+        super(MA_Increase, self).__init__()
         self.date = '2021-11-25'
 
-    def run(self, df, s):
+    def run(self, df, s, off):
         mv = marketvalue(s)
         if not 50 < mv < 300:
             return False
@@ -17,7 +17,7 @@ class UserSelecFunc(SelectFuncObj):
         if not 5 < pr < 10:
             return False
 
-        t = turn(df, self.date)
+        t = turn(df, off)
         if not 5 < t < 10:
             return False
 
@@ -34,13 +34,16 @@ class UserSelecFunc(SelectFuncObj):
     pass
 
 
-def quant_select_stock1(d):
-
-    pass
-
 if __name__ == '__main__':
-    us = UserSelecFunc()
-    us.date = '2021-11-25'
+    f0 = MA_Increase()
+    f0.date = '2021-11-25'
 
-    quant_run_select_stocks([us],0)
+    funcs = [f0]
+
+    stocks = quant_run_select_stocks(funcs, -2, f0.desc)
+
+    stocks = [s[0] for s in stocks]
+
+    print(stocks)
+
     pass
