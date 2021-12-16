@@ -26,8 +26,8 @@ def quant_output_probality(stocks: list[int], offset=-1):
             if d.empty:
                 pctChg = 0
             else:
-                price0 = d.iloc[offset, cfg.p_index]
-                price1 = d.iloc[offset + 1, cfg.p_index]
+                price0 = float(d.iloc[offset, cfg.p_index])
+                price1 = float(d.iloc[offset + 1, cfg.p_index])
                 pctChg = round((price1 - price0) / price0 * 100, 2)
         else:
             pctChg = 0

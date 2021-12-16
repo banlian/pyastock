@@ -2,7 +2,7 @@ import sqlite3
 
 
 def connectdb():
-    return sqlite3.connect(r'C:\Users\K\Documents\stock\stocks.db')
+    return sqlite3.connect(r'..\stocks.db')
 
 
 def db_name_to_id(name):
@@ -56,16 +56,24 @@ def db_id_to_name(id):
             return str(id)
 
 
-def db_select_stocks():
+def db_select_stocknames():
     with connectdb() as conn:
-        db = conn.execute('''select name from STOCKBASIC'''.format(id))
+        db = conn.execute('''select name from STOCKBASIC''')
         res = db.fetchall()
     return [r[0] for r in res]
 
 
+
+def db_select_stockcodes():
+    with connectdb() as conn:
+        db = conn.execute('''select ts_code from STOCKBASIC''')
+        res = db.fetchall()
+    return [r[0][:6] for r in res]
+
+
 def db_select_stockids():
     with connectdb() as conn:
-        db = conn.execute('''select symbol from STOCKBASIC'''.format(id))
+        db = conn.execute('''select symbol from STOCKBASIC''')
         res = db.fetchall()
     return [r[0] for r in res]
 
@@ -84,3 +92,11 @@ def select_industry_stocks(industry):
         return [r[1] for r in ret]
 
     pass
+
+
+import unittest
+
+class Test_db(unittest.TestCase):
+
+    def test_mv(self):
+        print(db_select_marketval(600519))

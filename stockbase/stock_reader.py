@@ -1,3 +1,5 @@
+import time
+
 import pandas as pd
 import os
 from pytdx.reader import TdxDailyBarReader
@@ -21,7 +23,7 @@ def get_df_ndays(df, ndays):
     return df
 
 
-def get_kdf_from_pkl(s, isdate=True):
+def get_kdf_from_pkl(s, isdate=True) -> pd.DataFrame:
     if not isinstance(s, int):
         # print('get pickle error, stock is not int', s)
         temp = s
@@ -36,8 +38,9 @@ def get_kdf_from_pkl(s, isdate=True):
         return None
 
     f = pd.read_pickle(file)
-    if isdate:
-        f['date'] = pd.to_datetime(f['date'])
+    # f = f.astype(float, errors='ignore')
+    # if isdate:
+    #     f['date'] = pd.to_datetime(f['date'])
     return f
 
 
@@ -115,3 +118,38 @@ def get_tdx_dayfile(s):
         return r"C:\new_jyplug\vipdoc\sh\lday\{0}".format(file)
     else:
         return r"C:\new_jyplug\vipdoc\sz\lday\{0}".format(file)
+
+
+def format_df(df):
+    df = df.astype(float, errors='ignore')
+    df['date'] = pd.to_datetime(df['date'])
+    return df
+
+
+import unittest
+
+
+class Test_stock_reader(unittest.TestCase):
+
+    def test_readdf(self):
+
+        t0 = time.time()
+        for i in range(100):
+            df = get_kdf_from_pkl(600036)
+            # df = format_pickle(df)
+        t = time.time() - t0
+        print(t / 100 * 4600)
+        print(df.tail(10))
+        print(df.columns)
+        print(df.dtypes)
+
+        pass
+
+    def test_format_pkl(self):
+        pkls = [p for p in os.listdir('../rawdata') if p.endswith('pkl')]
+        for p in pkls:
+            pklfile = os.path.join('../rawdata', p)
+            print(pklfile)
+            df = pd.read_pickle(pklfile)
+            df = format_df(df)
+            df.to_pickle(pklfile)

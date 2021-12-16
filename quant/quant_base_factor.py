@@ -15,7 +15,7 @@ def get_prices(df, ndays, offset: int = 0):
         data = df.iloc[(-ndays + offset):, cfg.p_index].values
     elif offset < 0:
         data = df.iloc[(-ndays + offset):offset, cfg.p_index].values
-    data = [d for d in data if isinstance(d, float)]
+    data = [float(d) for d in data if d != '--']
     return data
 
 
@@ -32,7 +32,7 @@ def turn(df, offset: int = 0):
     换手率
     """
     df = df.iloc[(-1 + offset)]
-    return df['turn']
+    return pd.to_numeric(df['turn'])
 
 
 def amount(df, offset: int = 0):

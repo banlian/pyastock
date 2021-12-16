@@ -1,3 +1,5 @@
+import time
+
 from quant.quant_base import *
 from quant.quant_base_db import *
 from quant.quant_base_factor import *
@@ -34,32 +36,33 @@ class MarketValLimit(SelectFuncObj):
     pass
 
 
-class MaCross(SelectFuncObj):
-    """
-    均线穿越
-    """
-
-    def __init__(self):
-        super(MaCross, self).__init__()
-        self.ma0 = 5
-        self.ma1 = 10
-        self.above = True
-
-    def run(self, df, stock, dayoffset):
-        ma0v = factor_ma(df, self.ma0, dayoffset)
-        ma1v = factor_ma(df, self.ma1, dayoffset)
-        ma0v1 = factor_ma(df, self.ma0, dayoffset - 1)
-        ma1v1 = factor_ma(df, self.ma1, dayoffset - 1)
-
-        if self.above:
-            # 上穿
-            if ma0v >= ma1v and ma0v1 < ma1v1:
-                return True
-        else:
-            # 下穿
-            if ma0v < ma1v and ma0v1 >= ma1v1:
-                return True
-        return False
+#
+# class MaCross(SelectFuncObj):
+#     """
+#     均线穿越
+#     """
+#
+#     def __init__(self):
+#         super(MaCross, self).__init__()
+#         self.ma0 = 5
+#         self.ma1 = 20
+#         self.above = True
+#
+#     def run(self, df, stock, dayoffset):
+#         ma0v = factor_ma(df, self.ma0, dayoffset)
+#         ma1v = factor_ma(df, self.ma1, dayoffset)
+#         ma0v1 = factor_ma(df, self.ma0, dayoffset - 1)
+#         ma1v1 = factor_ma(df, self.ma1, dayoffset - 1)
+#
+#         if self.above:
+#             # 上穿
+#             if ma0v >= ma1v and ma0v1 < ma1v1:
+#                 return True
+#         else:
+#             # 下穿
+#             if ma0v < ma1v and ma0v1 >= ma1v1:
+#                 return True
+#         return False
 
 
 class AboveMa(SelectFuncObj):
@@ -89,10 +92,15 @@ def quant_run_select_stocks(func_list: list[SelectFuncObj], dayoffset: int, algo
 
     day = datetime.datetime.today()
 
+    t0 = time.time()
+
     for s in stocks:
         df = get_kdf_from_pkl(s)
         if df is None or df.empty:
-            print('df none', s)
+            # print('df none', s)
+            continue
+
+        if df.shape[0] < abs(dayoffset) + 1:
             continue
 
         day = df['date'].iloc[-1 + dayoffset]
@@ -113,16 +121,17 @@ def quant_run_select_stocks(func_list: list[SelectFuncObj], dayoffset: int, algo
         else:
             results.append([s, func_list[0].ret])
 
-        print(s, db_id_to_name(s))
+        # print(s, db_id_to_name(s))
 
-    print('\n{}\nfound {} stocks!'.format(info, len(results)))
+    et = time.time() - t0
+
+    print('\n{}\nfound {} stocks by {:.2f} s !'.format(info, len(results), et.real))
     print('finish')
 
     quant_select_save('quant_select_stock_{}_{}.csv'.format(algo, day.strftime('%Y-%m-%d')), results)
 
     return results
     pass
-
 
 # import unittest
 #

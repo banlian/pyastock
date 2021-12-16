@@ -2,10 +2,11 @@ import datetime
 import time
 
 import pandas as pd
-from pytdx.reader import TdxDailyBarReader
 
 import unittest
 import os
+
+from stockbase.stock_reader import format_df
 
 
 def read_ths_xlsx_to_df(file):
@@ -73,8 +74,8 @@ def update_pickle_by_ths_df(df, date=None):
         df = pd.read_pickle(pklfile)
         if df.empty:
             print('dateframe empty', fcode)
-
             dfu = df.append(s, ignore_index=True)
+            dfu = format_df(dfu)
             dfu.to_csv('{}.csv'.format(fcode))
             dfu.to_pickle('{}.pkl'.format(fcode))
             errors.append(fcode)
@@ -84,6 +85,7 @@ def update_pickle_by_ths_df(df, date=None):
         if not d.empty:
             print('date conflict', fcode)
             df.update(pd.DataFrame(s, index=d.index))
+            df = format_df(df)
             df.to_csv('{}.csv'.format(fcode))
             df.to_pickle('{}.pkl'.format(fcode))
             # update
@@ -93,6 +95,7 @@ def update_pickle_by_ths_df(df, date=None):
 
         # append to last
         dfu = df.append(s, ignore_index=True)
+        dfu = format_df(dfu)
         dfu.to_csv('{}.csv'.format(fcode))
         dfu.to_pickle('{}.pkl'.format(fcode))
         # print('append finish ', fcode)
@@ -168,8 +171,26 @@ def update_pickle():
 #         df.to_pickle(pkl)
 #         df.to_csv(pkl[:-3] + 'csv')
 
+import time
 
 if __name__ == '__main__':
-    df = read_ths_xlsx_to_df(os.path.abspath('../temp/Table1130.xlsx'))
-    update_pickle_by_ths_df(df, '2021-11-30')
+    now = datetime.datetime.now()
+    date = now.strftime('%m%d')
+    dateindex = now.strftime('%Y-%m-%d')
+    print(dateindex, date)
+
+    # dateindex = '2021-12-16
+    # file = '../temp/Table1216.xlsx'
+    file = '../temp/Table{}.xlsx'.format(date)
+    print(file)
+    if not os.path.exists(file):
+        print('not exists file', file)
+        exit(0)
+
+    print('updating')
+    t0 = time.time()
+    df = read_ths_xlsx_to_df(os.path.abspath(file))
+    update_pickle_by_ths_df(df, dateindex)
+    et = time.time()-t0
+    print('update elapsed:', et)
     pass

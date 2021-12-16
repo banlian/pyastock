@@ -127,13 +127,13 @@ def get_stock_kline_day_by_pkl(s):
 
 
 if __name__ == '__main__':
-    stocks = db_select_stockids()
-    print(stocks)
+    # stocks = db_select_stockids()
+    # print(stocks)
 
     fetch_index('sh.000001')
     fetch_index('sh.000300')
 
-    # fetch_stocks(stocks)
+    #fetch_stocks(stocks)
 
     print('save data finish')
     pass

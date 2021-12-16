@@ -167,3 +167,8 @@ fabric.properties
 
 /eqdata/*.pkl
 /eqdata/*.csv
+/eqdata/temp/
+*.csv
+*.xls
+*.xlsx
+*.pkl

@@ -2,7 +2,7 @@ from stockbase.stock_db import *
 
 
 def all_stocks():
-    return db_select_stocks()
+    return db_select_stocknames()
 
 
 def all_stocksid():

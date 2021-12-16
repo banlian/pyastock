@@ -16,6 +16,7 @@ def get_trade_days(ndays):
     return days
     pass
 
+
 def get_trade_day(dayoff):
     """
         from pick file index 获取交易日
@@ -24,8 +25,6 @@ def get_trade_day(dayoff):
     days = pkl.loc[:, 'date'].values[dayoff]
     return days
     pass
-
-
 
 
 def quant_plot_stocks(file):
@@ -39,3 +38,14 @@ def quant_plot_stocks(file):
     plot_stocks(stocks, '30days')
 
     pass
+
+
+import unittest
+
+
+class Test_Quant(unittest.TestCase):
+
+    def test_get_days(self):
+        days = get_trade_days(10)
+        print(days)
+        pass

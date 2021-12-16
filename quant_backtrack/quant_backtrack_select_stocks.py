@@ -1,11 +1,11 @@
+import datetime
+
 from quant.quant_backtrack_base import *
-from quant.quant_base import *
-from quant.quant_select_stock_base import quant_run_select_stocks
-import quant_select_stock.quant_select_stock_2_macross
+from quant.quant_select_stock_base import *
+from quant_select_stock.algo2_macross5 import MaCross5
 
 
-def back_track_select_stocks():
-
+def back_track_select_stocks(select_funs: list[SelectFuncObj]):
     print('start backtrack...', qcfg.track_days)
 
     days = get_trade_days(qcfg.track_days)
@@ -15,14 +15,16 @@ def back_track_select_stocks():
 
         # calc data offset
         index = days.index(day)
-        select_date = -len(days) + index + 1
-        print(day, select_date)
+        dayoffset = -len(days) + index + 1
+        day = str(day)[:10]
+        print(day, index, dayoffset)
 
         # select stocks
-        select_funs = [quant_select_stock.quant_select_stock2.UserSelectAlgo1()]
+        # select_funs = []
         algo = ''
 
-        results = quant_run_select_stocks(select_funs, select_date, algo, day)
+        print(select_funs, dayoffset, algo)
+        results = quant_run_select_stocks(select_funs, dayoffset, algo)
 
         # get stockids
         stocks: list[int] = [r[0] for r in results]
@@ -32,10 +34,10 @@ def back_track_select_stocks():
             continue
 
         # calc next day performance
-        nextday = select_date+1
-        percents = quant_output_probality(stocks, nextday)
+        startday = dayoffset - 1
+        percents = quant_output_probality(stocks, startday)
 
-        quant_select_save(r'.\output_quant\quant_select_stock_{}_{}.csv'.format(day, algo), results, percents)
+        quant_select_save(r'E:\STOCKS\stock\output_quant\quant_select_stock_{}_{}.csv'.format(day, algo), results, percents)
 
         r = quant_select_result_stat(day, stocks, percents)
 
@@ -43,12 +45,18 @@ def back_track_select_stocks():
 
     print('finish select backtracks')
 
-    with open('../output_quant/quant_select_stock_day_result.csv', 'w', encoding='utf-8') as fs:
+    with open(r'E:\STOCKS\stock\output_quant\quant_select_stock_day_result.csv', 'w', encoding='utf-8') as fs:
         for i in range(len(days)):
             fs.write('{},{}\r\n'.format(days[i], dayresults[i]))
     pass
 
 
 if __name__ == '__main__':
-    back_track_select_stocks()
+
+    qcfg.track_days = 5
+
+    f0 = MaCross5()
+    selectfuncs = [f0]
+
+    back_track_select_stocks(selectfuncs)
     pass
