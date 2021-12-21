@@ -5,7 +5,7 @@ import pandas as pd
 import datetime
 import unittest
 
-from rawdata.fetch_data import *
+from data_util.fetch_data import *
 from stockbase.stock_db import db_select_stockids
 
 

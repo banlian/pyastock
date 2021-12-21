@@ -11,9 +11,17 @@ from stockbase.stock_reader import format_df
 
 def read_ths_xlsx_to_df(file):
     cols = ['开盘', '最高', '最低', '现价', '昨收', '总金额', '总手', '换手', '涨幅', ]
-    df = pd.read_excel(file)
+    if file.endswith('xlsx'):
+        df = pd.read_excel(file)
+    elif file.endswith('xls'):
+        df = pd.read_csv(file, encoding='gbk', sep='\t')
+    else:
+        print('file format error')
+        raise ValueError('format')
+
     print(df.columns)
-    df = df[['代码', '开盘', '最高', '最低', '现价', '昨收', '总金额', '总手', '换手', '涨幅']]
+    df = df[['代码', '开盘', '最高', '最低', '现价', '昨收', '总金额', '总市值', '总手', '换手', '涨幅', '所属行业']]
+
     for c in cols:
         df[c] = pd.to_numeric(df[c], errors='coerce')
     print(df)
@@ -51,8 +59,8 @@ def update_pickle_by_ths_df(df, date=None):
         fcode = format_code(code)
         # print(code, open, high, low, close, price0, vol, amount, turn, percent)
 
-        pklfile = '{}.pkl'.format(fcode)
-        csvfile = '{}.csv'.format(fcode)
+        pklfile = '../rawdata/{}.pkl'.format(fcode)
+        csvfile = '../rawdata/{}.csv'.format(fcode)
         if not os.path.exists(pklfile):
             print('not found', pklfile)
             errors.append(pklfile)
@@ -76,8 +84,8 @@ def update_pickle_by_ths_df(df, date=None):
             print('dateframe empty', fcode)
             dfu = df.append(s, ignore_index=True)
             dfu = format_df(dfu)
-            dfu.to_csv('{}.csv'.format(fcode))
-            dfu.to_pickle('{}.pkl'.format(fcode))
+            dfu.to_csv(csvfile)
+            dfu.to_pickle(pklfile)
             errors.append(fcode)
             continue
 
@@ -86,8 +94,8 @@ def update_pickle_by_ths_df(df, date=None):
             print('date conflict', fcode)
             df.update(pd.DataFrame(s, index=d.index))
             df = format_df(df)
-            df.to_csv('{}.csv'.format(fcode))
-            df.to_pickle('{}.pkl'.format(fcode))
+            dfu.to_csv(csvfile)
+            dfu.to_pickle(pklfile)
             # update
             if not os.path.exists(csvfile):
                 df.to_csv(csvfile)
@@ -96,8 +104,8 @@ def update_pickle_by_ths_df(df, date=None):
         # append to last
         dfu = df.append(s, ignore_index=True)
         dfu = format_df(dfu)
-        dfu.to_csv('{}.csv'.format(fcode))
-        dfu.to_pickle('{}.pkl'.format(fcode))
+        dfu.to_csv(csvfile)
+        dfu.to_pickle(pklfile)
         # print('append finish ', fcode)
         print('update', index)
 
@@ -139,49 +147,24 @@ def update_pickle_by_ths_df(df, date=None):
 def update_pickle():
     xlsxs = [f for f in os.listdir(r'../temp') if f.find('xlsx') > 0]
     for xl in xlsxs:
-        date = '2021'+xl[5:9]
-        date = datetime.datetime.strptime(date,'%Y%m%d')
+        date = '2021' + xl[5:9]
+        date = datetime.datetime.strptime(date, '%Y%m%d')
         xl = os.path.join(r'..\temp', xl)
         print(xl)
 
         df = read_ths_xlsx_to_df(xl)
-        df.to_pickle(xl[:-5]+'.pkl')
+        df.to_pickle(xl[:-5] + '.pkl')
         try:
-            update_pickle_by_ths_df(df,date.strftime('%Y-%m-%d'))
+            update_pickle_by_ths_df(df, date.strftime('%Y-%m-%d'))
         except Exception as ex:
             print(ex)
         print('update finish', xl)
 
 
-# def update_pickle_data():
-#     pickles = [f for f in os.listdir() if f.find('.pkl') > 0]
-#     start = pickles.index('sh.600927.pkl')
-#     pickles = pickles[start:]
-#
-#     for pkl in pickles:
-#         print(pkl)
-#
-#         df = pd.read_pickle(pkl)
-#         if df.empty:
-#             continue
-#         if df.iloc[-1, 0] == '2021-11-24':
-#             for i in range(4):
-#                 df.iloc[-i, 10] = df.iloc[-i, 10] * 100
-#
-#         df.to_pickle(pkl)
-#         df.to_csv(pkl[:-3] + 'csv')
-
 import time
 
-if __name__ == '__main__':
-    now = datetime.datetime.now()
-    date = now.strftime('%m%d')
-    dateindex = now.strftime('%Y-%m-%d')
-    print(dateindex, date)
 
-    # dateindex = '2021-12-16
-    # file = '../temp/Table1216.xlsx'
-    file = '../temp/Table{}.xlsx'.format(date)
+def update_temp_pkls(file, date):
     print(file)
     if not os.path.exists(file):
         print('not exists file', file)
@@ -190,7 +173,21 @@ if __name__ == '__main__':
     print('updating')
     t0 = time.time()
     df = read_ths_xlsx_to_df(os.path.abspath(file))
-    update_pickle_by_ths_df(df, dateindex)
-    et = time.time()-t0
+    update_pickle_by_ths_df(df, date)
+    et = time.time() - t0
     print('update elapsed:', et)
+
+
+if __name__ == '__main__':
+
+    now = datetime.datetime.now()
+    date = now.strftime('%m%d')
+    dateindex = now.strftime('%Y-%m-%d')
+    file = '../temp/Table{}.xls'.format(date)
+    print(file, dateindex)
+
+    # dateindex = '2021-12-16
+    # file = '../temp/Table1216.xlsx'
+
+    update_temp_pkls(file, dateindex)
     pass

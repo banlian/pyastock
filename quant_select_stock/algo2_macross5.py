@@ -12,8 +12,7 @@ class MaCross5(SelectFuncObj):
         super(MaCross5, self).__init__()
         self.ma0 = 3
         self.ma1 = 20
-        # self.desc = 'ma{}crossma{}'.format(self.ma0, self.ma1)
-        self.desc = 'mav'.format(self.ma0, self.ma1)
+        self.desc = 'ma{}cross{}'.format(self.ma0, self.ma1)
 
     def run(self, df, stock, dayoffset):
         mv = marketvalue(stock)
@@ -48,8 +47,10 @@ class MaCross5(SelectFuncObj):
         else:
             df = df.iloc[-1 + dayoffset - 200: dayoffset, cfg.p_index]
 
+        df = pd.to_numeric(df)
+
         # 均线
-        ma0 = MA(df, 3)
+        ma0 = RSI(df, 6)
         # ma1 = MA(df, 20, )
         ma5 = ma0[-1]
         # ma10 = factor_ma(df, self.ma1, dayoffset)
@@ -59,12 +60,12 @@ class MaCross5(SelectFuncObj):
         ma52 = ma0[-3]
         # ma101 = factor_ma(df, self.ma1, dayoffset - 1)
 
-        cross = ma52 > ma51 and ma51 < ma5 and close > ma5 and pct > 0
+        cross = ma52 > ma51 and ma51 < ma5 and ma5 < 55
         # cross = ma5 >= ma10 and ma51 < ma101
         if cross:
-            s = SLOPE(df[-8:], 5)
-            sma = SLOPE(ma0[-4:], 3)
-            if 0.1 <= s[-1] < 1 and sma[-1] > 0:
+            s = SLOPE(df[-100:], 60)
+            # sma = SLOPE(ma0[-4:], 3)
+            if 0.1 <= s[-1] < 1:
                 self.ret = 'cross by close {:.2f} ma {:.2f} pct {:.2f} slope:{:.2f}'.format(close, ma5, pct, s[-1])
                 return True
 

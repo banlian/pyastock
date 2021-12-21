@@ -1,3 +1,5 @@
+import os
+
 from Ashare import get_price
 from eqdata.z_readstocks import *
 
@@ -74,9 +76,10 @@ def download_rsi_data_60m(codes):
             df = df.reset_index()
             df.rename({'': 'date'}, axis=1, inplace=True)
             # print('download', c, ' df', df.shape[0])
-            df.to_pickle('./temp/{}.pkl'.format(c[0:6]))
-            # df.to_csv('./temp/{}.csv'.format(c[0:6]))
+            df.to_pickle('./temp/{}_60m.pkl'.format(c))
+            # df.to_csv('./temp/{}.csv'.format(c))
         except Exception as ex:
+            os.remove('./temp/{}_60m.pkl'.format(c))
             print('download error', c, ex)
         pass
 
@@ -90,9 +93,10 @@ def download_rsi_data_1m(codes):
             df = df.reset_index()
             df.rename({'': 'date'}, axis=1, inplace=True)
             # print('download', c, ' df', df.shape[0])
-            df.to_pickle('./temp/{}_1m.pkl'.format(c[0:6]))
-            # df.to_csv('./temp/{}_1m.csv'.format(c[0:6]))
+            df.to_pickle('./temp/{}_1m.pkl'.format(c))
+            # df.to_csv('./temp/{}_1m.csv'.format(c))
         except Exception as ex:
+            os.remove('./temp/{}_1m.pkl'.format(c))
             print('download error', c, ex)
         pass
 
@@ -106,8 +110,12 @@ class Test_helper(unittest.TestCase):
         download_data_day(['sh000001', 'sh000300'])
         pass
 
+    def test_normalizecode(self):
+
+        print(normalize_code('600036'))
+
     def test_download_rsi(self):
-        stocks = read_txt_code()
+        stocks = read_txt_code('short.txt')
 
         for s in stocks:
             print(normalize_code(s))

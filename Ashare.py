@@ -61,7 +61,9 @@ def get_price_sina(code, end_date='', count=10, frequency='60m'):  # 新浪全�
     return df
 
 
-def get_price(code, end_date='', count=10, frequency='1d', fields=[]):  # 对外暴露只有唯一函数，这样对用户才是最友好的
+def get_price(code, end_date='', count=10, frequency='1d', fields=[]):
+    """对外暴露只有唯一函数，这样对用户才是最友好的"""
+
     xcode = code.replace('.XSHG', '').replace('.XSHE', '')  # 证券代码编码兼容处理
     xcode = 'sh' + xcode if ('XSHG' in code) else 'sz' + xcode if ('XSHE' in code) else code
 

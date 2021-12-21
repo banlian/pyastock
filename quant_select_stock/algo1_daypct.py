@@ -12,6 +12,7 @@ class MaxPctSlopeDay(SelectFuncObj):
         super(MaxPctSlopeDay, self).__init__()
         self.days = 10
         self.slopethreshold = 0.5
+        self.desc = f'days_{self.days}_slope_{self.slopethreshold}'
 
     def run(self, df, stock, dayoffset):
 
@@ -60,29 +61,36 @@ class MaxPctDay(SelectFuncObj):
     几日内最大涨幅
     """
 
-    def __init__(self):
+    def __init__(self, dcount=3, pct=75):
         super(MaxPctDay, self).__init__()
-        self.days = 3
-        self.max_percent = 75
+        self.days = dcount
+        self.threshold = pct
+        self.mode = 1 if pct > 0 else -1
+        self.desc = f'day_{self.days}_pct_{self.threshold}_mode_{self.mode}'
 
     def run(self, df, s, dayoffset):
         p = price_increase_percent(df, self.days, dayoffset)
-        if p >= self.max_percent:
-            self.ret = 'days:{} max pct:{:.2f}'.format(self.days, p)
-            return True
+        if self.threshold > 0:
+            if p > self.threshold:
+                self.ret = f'days:{self.days} max pct:{p:.2f}'
+                return True
+        else:
+            if p < self.threshold:
+                self.ret = f'days:{self.days} max pct:{p:.2f}'
+                return True
         return False
+        pass
 
-    pass
 
-
-class MostPriceDay(SelectFuncObj):
+class MaxPriceDay(SelectFuncObj):
     """
-    几日内最大涨幅
+    几日内最高价
     """
 
-    def __init__(self):
-        super(MostPriceDay, self).__init__()
-        self.days = 52
+    def __init__(self, dcount=52):
+        super(MaxPriceDay, self).__init__()
+        self.days = dcount
+        self.desc = f'maxprice_{self.days}'
 
     def run(self, df, s, dayoffset):
         opens = df['high'].iloc[-self.days + dayoffset:-1 - dayoffset]
@@ -125,8 +133,7 @@ if __name__ == '__main__':
     # c0.max_percent = 20
     # c0.days = 8
 
-    c0 = MostPriceDay()
-    c0.days = 180
+    c0 = MaxPctDay(3,30)
 
     # c0 = MaxPctSlopeDay()
     # c0.slopethreshold = 0.66

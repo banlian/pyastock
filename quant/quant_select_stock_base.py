@@ -79,7 +79,7 @@ class AboveMa(SelectFuncObj):
         return False
 
 
-def quant_run_select_stocks(func_list: list[SelectFuncObj], dayoffset: int, algo='default'):
+def quant_run_select_stocks(func_list: list[SelectFuncObj] = [], dayoffset: int = -1, algo='default'):
     """
     量化选股
     """
@@ -89,6 +89,8 @@ def quant_run_select_stocks(func_list: list[SelectFuncObj], dayoffset: int, algo
 
     info = '-'.join([f.desc for f in func_list])
     print('run', info)
+    algo = algo + '_' + info
+    print('algo', algo)
 
     day = datetime.datetime.today()
 

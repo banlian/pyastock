@@ -19,13 +19,15 @@ def get_month_days(year, month):
 
 
 class MaxPctMonth(SelectFuncObj):
-    def __init__(self):
+    def __init__(self, month=12, threshold=50):
         super(MaxPctMonth, self).__init__()
-        self.desc = '每月涨幅'
-        self.threshold = 50
-        self.month = 11
+        self.month = month
+        self.threshold = threshold
+        self.desc = f'maxpct_{self.month}_by_{self.threshold}'
 
     def run(self, df, stock, dayoffset):
+        self.desc = f'maxpct_{self.month}_by_{self.threshold}'
+
         # mv = marketvalue(stock)
         # if not 50 < mv < 5000:
         #     return False
@@ -50,37 +52,36 @@ class MaxPctMonth(SelectFuncObj):
 
 import unittest
 
-
-class Test_MaxPSelect(unittest.TestCase):
-
-    def test_select(self):
-        df = pd.read_pickle(r'..\rawdata\sh.000001.pkl')
-
-        f = MaxPctMonth()
-
-        r = f.run(df, 1, 0)
-        print(r)
-        print(f.ret)
-
-        pass
-
-    def test_enum_months(self):
-        for i in range(6, 12):
-            t = '2011-{:0>2d}'.format(i)
-            algo = MaxPctMonth()
-            algo.month = i
-            algo.threshold = 75
-            results = quant_run_select_stocks([algo], 0, 'month_pct')
-
+#
+# class Test_MaxPSelect(unittest.TestCase):
+#
+#     def test_select(self):
+#         df = pd.read_pickle(r'..\rawdata\sh.000001.pkl')
+#
+#         f = MaxPctMonth()
+#
+#         r = f.run(df, 1, 0)
+#         print(r)
+#         print(f.ret)
+#
+#         pass
+#
+#     def test_enum_months(self):
+#         for i in range(6, 12):
+#             t = '2011-{:0>2d}'.format(i)
+#             algo = MaxPctMonth()
+#             algo.month = i
+#             algo.threshold = 75
+#             results = quant_run_select_stocks([algo], 0, 'month_pct')
+#
 
 
 if __name__ == '__main__':
 
     for i in range(10, 13):
-        t = '2011-{:0>2d}'.format(i)
-        algo = MaxPctMonth()
-        algo.month = i
-        algo.threshold = 50
+        t = '2021-{:0>2d}'.format(i)
+        print(t)
+        algo = MaxPctMonth(i, 50)
 
         results = quant_run_select_stocks([algo], 0, 'month_pct')
 

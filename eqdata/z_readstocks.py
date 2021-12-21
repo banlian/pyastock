@@ -19,10 +19,16 @@ def read_txt_code(file):
     return lines
 
 
-def read_xlsx_codes(excelfile='short.xlsx'):
+def read_xlsx_codes(excelfile):
     df = pd.read_excel(excelfile)
     df = df.iloc[:, 0]
-    codes = [str(r)[2:] for r in df.iloc[:].values if len(r) == 8]
+    codes = [str(r).lower() for r in df.values if len(str(r)) == 8]
+
+    with open(excelfile[:-4] + 'txt', 'w') as fs:
+        for c in codes:
+            fs.write('{}\n'.format(c))
+    pass
+
     return codes
 
 
@@ -45,19 +51,12 @@ class Test_Data(unittest.TestCase):
     def test_read_pkl_codes(self):
         codes = read_xlsx_codes('short.xlsx')
         print(codes)
-
-        with open('short.txt', 'w') as fs:
-            for c in codes:
-                fs.write('{}\n'.format(c))
-
-        pass
-
-    def test_read_pkl_codes2(self):
         codes = read_xlsx_codes('shortz.xlsx')
         print(codes)
 
-        with open('shortz.txt', 'w') as fs:
-            for c in codes:
-                fs.write('{}\n'.format(c))
+    def test_xls(self):
 
-        pass
+        df = pd.read_csv('short.xls', encoding='gbk', sep='\t')
+        print(df)
+        print(df.columns)
+        print(df.index)

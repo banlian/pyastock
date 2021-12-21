@@ -1,23 +1,11 @@
 import os
 import pandas as pd
 
+from data_util.fetch_update_data_by_xlsx import read_ths_xlsx_to_df
 from stockbase.stock_db import db_id_to_name
 
 import matplotlib.pyplot as plt
 
-
-def read_ths_xlsx_to_df(file):
-    cols = ['开盘', '最高', '最低', '现价', '昨收', '总金额', '总市值', '总手', '换手', '涨幅', ]
-    df = pd.read_excel(file)
-    # print(df.columns)
-    df = df[['代码', '开盘', '最高', '最低', '现价', '昨收', '总金额', '总市值', '总手', '换手', '涨幅']]
-    for c in cols:
-        df[c] = pd.to_numeric(df[c], errors='coerce')
-    # print(df)
-    # print(df.columns)
-    # print(df.dtypes)
-
-    return df
 
 
 def analysis_day_vol(file):

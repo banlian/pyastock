@@ -1,5 +1,8 @@
 # -*- coding:utf-8 -*-    --------------Ashare 股票行情数据双核心版( https://github.com/mpquant/Ashare )
-import json, requests, datetime;
+import datetime
+import json
+import requests
+
 import pandas as pd  #
 
 
@@ -14,7 +17,8 @@ def get_price_day_tx(code, end_date='', count=10, frequency='1d'):  # 日线获�
     ms = 'qfq' + unit;
     stk = st['data'][code]
     buf = stk[ms] if ms in stk else stk[unit]  # 指数返回不是qfqday,是day
-    df = pd.DataFrame(buf, columns=['time', 'open', 'close', 'high', 'low', 'volume'], dtype='float')
+    df = pd.DataFrame(buf, columns=['time', 'open', 'close', 'high', 'low', 'volume'])
+    df[['open', 'close', 'high', 'low', 'volume']] = df[['open', 'close', 'high', 'low', 'volume']].astype('float')
     df.time = pd.to_datetime(df.time)
     df.set_index(['time'], inplace=True)
     df.index.name = ''  # 处理索引
@@ -63,7 +67,8 @@ def get_price_sina(code, end_date='', count=10, frequency='60m'):  # 新浪全�
     return df
 
 
-def get_price(code, end_date='', count=10, frequency='1d', fields=[]):  # 对外暴露只有唯一函数，这样对用户才是最友好的
+def get_price(code, end_date='', count=10, frequency='1d', fields=[]):
+    """对外暴露只有唯一函数，这样对用户才是最友好的"""
     xcode = code.replace('.XSHG', '').replace('.XSHE', '')  # 证券代码编码兼容处理
     xcode = 'sh' + xcode if ('XSHG' in code) else 'sz' + xcode if ('XSHE' in code) else code
 
@@ -80,7 +85,6 @@ def get_price(code, end_date='', count=10, frequency='1d', fields=[]):  # 对外
             return get_price_sina(xcode, end_date=end_date, count=count, frequency=frequency)  # 主力
         except:
             return get_price_min_tx(xcode, end_date=end_date, count=count, frequency=frequency)  # 备用
-
 
 if __name__ == '__main__':
     df = get_price('sh000001', frequency='1d', count=10)  # 支持'1d'日, '1w'周, '1M'月

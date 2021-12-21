@@ -116,7 +116,7 @@ def run_short_rsi(stocks):
         if algo.isclose:
             selected.append((int(s), algo.ret))
             print('---close to rsi---')
-            print(s, db_id_to_name(int(s)), algo.ret)
+            print(s, db_id_to_name(s), algo.ret)
 
     print('-------rsi result--------')
     with open('{}_rsi.csv'.format(file), 'w') as fs:

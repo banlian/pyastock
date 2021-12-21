@@ -61,8 +61,8 @@ def fetch_stocks(stocks):
             data_list.append(rs.get_row_data())
         result = pd.DataFrame(data_list, columns=rs.fields)
         #### 结果集输出到csv文件 ####
-        result.to_pickle('{}.pkl'.format(name))
-        result.to_csv('{}.csv'.format(name))
+        result.to_pickle(f'../rawdata/{name}.pkl')
+        result.to_csv(f'../rawdata/{name}.csv')
 
         et = time.time() - t0
         # result.to_csv(name, index=False)
@@ -102,8 +102,8 @@ def fetch_index(name):
             data_list.append(rs.get_row_data())
         result = pd.DataFrame(data_list, columns=rs.fields)
         #### 结果集输出到csv文件 ####
-        result.to_pickle('{}.pkl'.format(name))
-        result.to_csv('{}.csv'.format(name))
+        result.to_pickle(f'../rawdata/{name}.pkl')
+        result.to_csv(f'../rawdata/{name}.csv')
 
         et = time.time() - t0
         # result.to_csv(name, index=False)
@@ -118,7 +118,7 @@ def get_stock_kline_day_by_pkl(s):
     if not isinstance(s, int):
         print('get pickle error, stock is not int', s)
 
-    file = r'.\{}.pkl'.format(get_stock_pickle_name(s))
+    file = r'../rawdata/{}.pkl'.format(get_stock_pickle_name(s))
     if not os.path.exists(file):
         print('find pickel error', s)
         return None

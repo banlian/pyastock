@@ -61,7 +61,7 @@ def AVEDEV(S, N):         #平均绝对偏差  (序列与其平均值的绝对�
     return pd.Series(S).rolling(N).apply(lambda x: (np.abs(x - x.mean())).mean()).values 
 
 def SLOPE(S, N):          #返S序列N周期回线性回归斜率        
-    return pd.Series(S).rolling(N).apply(lambda x: np.polyfit(x.index,x,deg=1)[0],raw=False).values  
+    return pd.Series(S).rolling(N).apply(lambda x: np.polyfit(x.index, x, deg=1)[0], raw=False).values
 
 def FORCAST(S, N):        #返回S序列N周期回线性回归后的预测值， jqz1226改进成序列出    
     return pd.Series(S).rolling(N).apply(lambda x:np.polyval(np.polyfit(range(N),x,deg=1),N-1),raw=False).values  

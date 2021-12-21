@@ -1,4 +1,3 @@
-from quant_base_factor import factor_ma
 
 from MyTT import *
 

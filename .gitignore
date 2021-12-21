@@ -172,3 +172,4 @@ fabric.properties
 *.xls
 *.xlsx
 *.pkl
+/tool/*
