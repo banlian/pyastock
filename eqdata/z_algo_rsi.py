@@ -1,9 +1,6 @@
 import os.path
 
-from Ashare import *
-from eqdata.z_readstocks import *
 from eqdata.z_helper import *
-from quant.quant_select_stock_base import SelectFuncObj
 from stockbase.stock_db import *
 from MyTT import *
 
@@ -13,8 +10,43 @@ import time
 import math
 
 
-def RSIP(df):
-    C = df.loc[:, 'close']
+def get_stock_pct(c):
+    try:
+        df = get_stock_kline(c, freq='1d', count=2)
+        if df.empty or df.shape[0] < 2:
+            return 0, 0
+        c0 = df['close'][-2]
+        c1 = df['close'][-1]
+        return round((c1 - c0) / c0 * 100, 2), c1
+    except Exception as ex:
+        print('download error', c, ex)
+        return 0, 0
+    pass
+
+
+def get_stock_rsi(c, freq='5m', n=10, count=60):
+    try:
+        df = get_stock_kline(c, freq=freq, count=count)
+        if df.empty or df.shape[0] < 2:
+            return 50
+        r = get_rsi(df, n)
+        return r
+    except Exception as ex:
+        print('download error', c, ex)
+        return 50
+    pass
+
+
+def get_rsi(df, n=10):
+    try:
+        r = RSI(df['close'], n)
+        return r[-1]
+    except:
+        return math.nan
+
+
+def get_rsi_price_hour(df):
+    C = df['close']
     C = C.dropna()
     C = pd.to_numeric(C)
     C = np.array(C)
@@ -28,95 +60,29 @@ def RSIP(df):
     return R
 
 
-class AlgoRsi(SelectFuncObj):
-    """
-    恐慌价格
-    """
-
-    def __init__(self):
-        super(AlgoRsi, self).__init__()
-        self.desc = '恐慌价格'
-
-        '''恐慌区域阈值'''
-        self.rsi_threshold = 10
-        '''恐慌判断模式 0-判断恐慌触发，1-恐慌区域判断，2-接近恐慌区域'''
-        self.mode = 0
-        self.isclose = False
-        self.istriggerd = False
-        self.rsi = 0
-
-    def run(self, df, stock, dayoffset):
-
-        self.ret = 'rsi error'
-        self.isclose = False
-        self.istriggerd = False
-        self.rsi = 0
-
-        if df.shape[0] < 22:
-            self.ret = 'rsi no data'
-            return False
-
-        d = df.iloc[dayoffset]
-        close = d['close']
-        low = d['low']
-        if not isinstance(close, float):
-            self.ret = 'rsi data float error'
-            return False
-
-        # print(stock)
-        rsi = RSIP(df)[dayoffset]
-        self.rsi = rsi
-
-        delta = round((close - rsi) / close * 100, 2)
-
-        # 接近恐慌区域
-        if math.fabs(delta) < self.rsi_threshold:
-            self.ret = 'close rsi:{:.2f}-c:{:.2f}-diff:{:.2f}'.format(rsi, close, delta)
-            self.isclose = True
-            if self.mode == 0:
-                # 是否恐慌触发
-                if rsi >= low or rsi >= close:
-                    self.istriggerd = True
-                    self.ret = 'triggered rsi:{:.2f}-c:{:.2f}-diff:{:.2f}'.format(rsi, close, delta)
-                    return True
-                else:
-                    return False
-            elif self.mode == 1:
-                # 是否接近恐慌
-                if rsi >= low or rsi >= close:
-                    self.istriggerd = True
-                    self.ret = 'triggered rsi:{:.2f}-c:{:.2f}-pct:{:.2f}'.format(rsi, close, delta)
-                return True
-
-        self.ret = 'rsi:{:.2f}-c:{:.2f}-diff:{:.2f}'.format(rsi, close, delta)
-        return False
-
-    pass
-
-
-def run_short_rsi(stocks):
+def run_stocks_rsi(stocks):
     file = 'short'
     # stocks = read_xlsx_codes(file + '.xlsx')
-
-    algo = AlgoRsi()
-    algo.mode = 0
-    algo.rsi_threshold = 3
+    threshold = 3
 
     selected = []
 
     for s in stocks:
         ns = [normalize_code(s)]
-        download_rsi_data_60m(ns)
+        download_rsi_data(ns, '60m')
 
         df = pd.read_pickle('./temp/{}.pkl'.format(s))
-
-        if algo.run(df, int(s), -1):
-            selected.append((int(s), algo.ret))
+        close = df['close'].values[-1]
+        rsi = get_rsi_price_hour(df)[-1]
+        delta = round((close - rsi) / close * 100, 2)
+        info = f'rsi:{rsi} close:{close}'
+        if close < rsi:
+            selected.append((int(s), info))
             pass
-        if algo.isclose:
-            selected.append((int(s), algo.ret))
+        elif delta < threshold:
+            selected.append((int(s), info))
             print('---close to rsi---')
-            print(s, db_id_to_name(s), algo.ret)
+            print(s, db_id_to_name(s), info)
 
     print('-------rsi result--------')
     with open('{}_rsi.csv'.format(file), 'w') as fs:
@@ -145,33 +111,30 @@ class Test_algo_rsi(unittest.TestCase):
         print(df.columns)
         pass
 
-
     def test_rsi(self):
-        download_rsi_data_60m([normalize_code('000001')])
+        download_rsi_data([normalize_code('000001')], '60m')
         df = pd.read_pickle(r'./temp/000001.pkl')
         dayoffset = 0
         d = df.iloc[-1 + dayoffset]
         close = d['close']
         low = d['low']
         print(close, low)
-        r = RSIP(df)[-1 + dayoffset]
+        r = get_rsi_price_hour(df)[-1 + dayoffset]
         print('rsi', r)
-
-    def test_save_stocks(self):
-        file = 'short'
-        stocks = read_xlsx_codes(file + '.xlsx')
-        print(stocks)
-        with open('short.txt', 'w') as fs:
-            for s in stocks:
-                fs.write('{}\n'.format(s))
 
     def test_rsi_short_stocks(self):
         stocks = read_txt_code()
-        run_short_rsi(stocks)
+        run_stocks_rsi(stocks)
 
     def test_rsi_all_stocks(self):
         stocks = db_select_stockcodes()
-        run_short_rsi(stocks)
+        run_stocks_rsi(stocks)
+
+    def test_get_stock_rsi(self):
+        r = get_stock_rsi('sh510300', n=10, count=60)
+
+
+        pass
 
 
 if __name__ == '__main__':

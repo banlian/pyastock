@@ -6,28 +6,8 @@ import pandas as pd
 import unittest
 import os
 
+from data_util.helper import *
 from stockbase.stock_reader import format_df
-
-
-def read_ths_xlsx_to_df(file):
-    cols = ['开盘', '最高', '最低', '现价', '昨收', '总金额', '总手', '换手', '涨幅', ]
-    if file.endswith('xlsx'):
-        df = pd.read_excel(file)
-    elif file.endswith('xls'):
-        df = pd.read_csv(file, encoding='gbk', sep='\t')
-    else:
-        print('file format error')
-        raise ValueError('format')
-
-    print(df.columns)
-    df = df[['代码', '开盘', '最高', '最低', '现价', '昨收', '总金额', '总市值', '总手', '换手', '涨幅', '所属行业']]
-
-    for c in cols:
-        df[c] = pd.to_numeric(df[c], errors='coerce')
-    print(df)
-    print(df.columns)
-    print(df.dtypes)
-    return df
 
 
 def update_pickle_by_ths_df(df, date=None):
@@ -46,18 +26,18 @@ def update_pickle_by_ths_df(df, date=None):
 
     for index, r in df.iterrows():
         code = int(r['代码'][2:])
-        open = r['开盘']
-        high = r['最高']
-        low = r['最低']
-        close = r['现价']
-        price0 = r['昨收']
+        o = r['开盘']
+        h = r['最高']
+        l = r['最低']
+        c = r['现价']
+        c0 = r['昨收']
         amount = r['总金额']
         vol = r['总手']
         turn = r['换手']
         percent = r['涨幅']
 
         fcode = format_code(code)
-        # print(code, open, high, low, close, price0, vol, amount, turn, percent)
+        # print(code, o, h, l, c, c0, vol, amount, turn, percent)
 
         pklfile = '../rawdata/{}.pkl'.format(fcode)
         csvfile = '../rawdata/{}.csv'.format(fcode)
@@ -68,8 +48,8 @@ def update_pickle_by_ths_df(df, date=None):
 
         s = {'date': date,
              'code': fcode,
-             'open': open, 'high': high, 'low': low, 'close': close,
-             'preclose': price0,
+             'open': o, 'high': h, 'low': l, 'close': c,
+             'preclose': c0,
              'volume': vol, 'amount': amount,
              'adjustflag': 2,
              'turn': turn * 100,
@@ -82,8 +62,8 @@ def update_pickle_by_ths_df(df, date=None):
         df = pd.read_pickle(pklfile)
         if df.empty:
             print('dateframe empty', fcode)
-            dfu = df.append(s, ignore_index=True)
-            dfu = format_df(dfu)
+            df = df.append(s, ignore_index=True)
+            dfu = format_df(df)
             dfu.to_csv(csvfile)
             dfu.to_pickle(pklfile)
             errors.append(fcode)
@@ -93,7 +73,7 @@ def update_pickle_by_ths_df(df, date=None):
         if not d.empty:
             print('date conflict', fcode)
             df.update(pd.DataFrame(s, index=d.index))
-            df = format_df(df)
+            dfu = format_df(df)
             dfu.to_csv(csvfile)
             dfu.to_pickle(pklfile)
             # update
@@ -102,8 +82,8 @@ def update_pickle_by_ths_df(df, date=None):
             continue
 
         # append to last
-        dfu = df.append(s, ignore_index=True)
-        dfu = format_df(dfu)
+        df = df.append(s, ignore_index=True)
+        dfu = format_df(df)
         dfu.to_csv(csvfile)
         dfu.to_pickle(pklfile)
         # print('append finish ', fcode)
@@ -144,23 +124,6 @@ def update_pickle_by_ths_df(df, date=None):
 #         reader.get_df()
 
 
-def update_pickle():
-    xlsxs = [f for f in os.listdir(r'../temp') if f.find('xlsx') > 0]
-    for xl in xlsxs:
-        date = '2021' + xl[5:9]
-        date = datetime.datetime.strptime(date, '%Y%m%d')
-        xl = os.path.join(r'..\temp', xl)
-        print(xl)
-
-        df = read_ths_xlsx_to_df(xl)
-        df.to_pickle(xl[:-5] + '.pkl')
-        try:
-            update_pickle_by_ths_df(df, date.strftime('%Y-%m-%d'))
-        except Exception as ex:
-            print(ex)
-        print('update finish', xl)
-
-
 import time
 
 
@@ -186,8 +149,10 @@ if __name__ == '__main__':
     file = '../temp/Table{}.xls'.format(date)
     print(file, dateindex)
 
+    # df = read_ths_xlsx_to_df(os.path.abspath(file))
+
     # dateindex = '2021-12-16
     # file = '../temp/Table1216.xlsx'
 
-    update_temp_pkls(file, dateindex)
+    # update_temp_pkls(file, dateindex)
     pass

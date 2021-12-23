@@ -3,6 +3,29 @@ from quant.quant_select_stock_base import *
 from MyTT import *
 
 
+class MaSequence(SelectFuncObj):
+    def __init__(self, ndays=5):
+        super(MaSequence, self).__init__()
+        self.ndays = ndays
+        self.desc = 'Sequence'
+        pass
+
+    def run(self, df, stock, dayoffset):
+
+        opens = df['open'][-self.ndays:]
+        closes = df['close'][-self.ndays:]
+
+        ret = closes > opens
+
+        rets = ret[-self.ndays:]
+
+        if all(rets):
+            return True
+        return False
+
+        pass
+
+
 class MaCloseCross(SelectFuncObj):
     """
     低位突破

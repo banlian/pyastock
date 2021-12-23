@@ -1,6 +1,5 @@
-from eqdata.z_readstocks import read_txt_code
+from eqdata.z_helper import read_txt_code
 from eqdata.z_track_rsi import track_short_rsi
-from stockbase.stock_db import *
 
 
 if __name__ == '__main__':

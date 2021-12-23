@@ -6,13 +6,14 @@ import threading
 import time
 import datetime
 
-from eqdata.z_stock import get_stock
+from eqdata.z_algo_rsi import get_stock_rsi
+from eqdata.z_helper import get_stock_kline
 from eqdata.z_track_rsi import RsiTrack, notifywin
 
 
 class MainWindow(wx.Frame):
     def __init__(self, parent, title):
-        wx.Frame.__init__(self, parent, title=title, size=(1450, 850))
+        wx.Frame.__init__(self, parent, title=title, size=(1500, 850))
 
         panel = wx.Panel(self)
 
@@ -37,15 +38,12 @@ class MainWindow(wx.Frame):
         self.rsilog = wx.TextCtrl(boxinfo, style=wx.TE_MULTILINE, pos=(10, 20), size=(580, 220))
 
         # wx grid
-        self.grid = wx.grid.Grid(panel, -1, pos=(660, 20), size=(750, 800))
-        self.grid.CreateGrid(stockcount, 7)
-        self.grid.SetColLabelValue(0, "stock")
-        self.grid.SetColLabelValue(1, "name")
-        self.grid.SetColLabelValue(2, "rsi")
-        self.grid.SetColLabelValue(3, "close")
-        self.grid.SetColLabelValue(4, "delta")
-        self.grid.SetColLabelValue(5, "dclose")
-        self.grid.SetColLabelValue(6, "pct")
+        gridcols = ['stock', 'name', 'rsip', 'close1m', 'delta', 'close', 'pct', 'rsi30m']
+
+        self.grid = wx.grid.Grid(panel, -1, pos=(660, 20), size=(800, 800))
+        self.grid.CreateGrid(stockcount, len(gridcols))
+        for c in gridcols:
+            self.grid.SetColLabelValue(gridcols.index(c), c)
 
         for i in range(stockcount):
             s = self.rt.stocks[i]
@@ -54,23 +52,20 @@ class MainWindow(wx.Frame):
             self.grid.SetCellValue(i, 1, st)
             self.grid.SetReadOnly(i, 0)
             self.grid.SetReadOnly(i, 1)
-            # self.grid.SetReadOnly(i, 2)
-            # self.grid.SetReadOnly(i, 3)
-            # self.grid.SetReadOnly(i, 4)
             self.grid.SetColFormatFloat(2, 6, 2)
             self.grid.SetColFormatFloat(3, 6, 2)
             self.grid.SetColFormatFloat(4, 6, 2)
             self.grid.SetColFormatFloat(5, 6, 2)
             self.grid.SetColFormatFloat(6, 6, 2)
+            self.grid.SetColFormatFloat(7, 6, 2)
             self.grid.SetCellValue(i, 2, str(0.0))
             self.grid.SetCellValue(i, 3, str(0.0))
             self.grid.SetCellValue(i, 4, str(0.0))
             self.grid.SetCellValue(i, 5, str(0.0))
             self.grid.SetCellValue(i, 6, str(0.0))
-            self.grid.SetCellBackgroundColour(i, 0, wx.WHITE)
-            self.grid.SetCellBackgroundColour(i, 1, wx.WHITE)
+            self.grid.SetCellValue(i, 7, str(0.0))
 
-        self.CreateStatusBar(4)  # A StatusBar in the bottom of the window
+        self.CreateStatusBar(6)  # A StatusBar in the bottom of the window
 
         # 创建定时器
         self.timer = wx.Timer(self)  # 创建定时器
@@ -88,6 +83,10 @@ class MainWindow(wx.Frame):
         menuBar = wx.MenuBar()
         menuBar.Append(filemenu, "&File")  # Adding the "filemenu" to the MenuBar
         self.SetMenuBar(menuBar)  # Adding the MenuBar to the Frame content.
+        r = get_stock_rsi('sh510050', n=10, count=60)
+        self.SetStatusText(f'50etf: {r:.2f}', 4)
+        r = get_stock_rsi('sh510300', n=10, count=60)
+        self.SetStatusText(f'300etf: {r:.2f}', 5)
 
         # Set events.
         self.Bind(wx.EVT_MENU, self.OnAbout, menuAbout)
@@ -97,7 +96,7 @@ class MainWindow(wx.Frame):
 
         self.Show(True)
 
-    def update_rsi(self, stock, rsi, close, delta, pct, dclose):
+    def update_rsi(self, stock, rsi, close, delta, dclose, pct, rsi30m):
         r = self.rt.stocks.index(stock)
         print('update rst', r)
         if r >= 0:
@@ -113,6 +112,7 @@ class MainWindow(wx.Frame):
                 self.grid.SetCellBackgroundColour(r, 0, c)
                 self.grid.SetCellBackgroundColour(r, 1, c)
                 self.grid.SetCellBackgroundColour(r, 4, c)
+
             if dclose is not None:
                 self.grid.SetCellValue(r, 5, str(dclose))
                 pass
@@ -120,6 +120,12 @@ class MainWindow(wx.Frame):
                 self.grid.SetCellValue(r, 6, str(pct))
                 c = wx.RED if pct > 0 else wx.BLUE
                 self.grid.SetCellTextColour(r, 6, c)
+                pass
+
+            if rsi30m is not None:
+                self.grid.SetCellValue(r, 7, str(rsi30m))
+                c = wx.RED if rsi30m < 20 else wx.GREEN if rsi30m > 80 else wx.WHITE
+                self.grid.SetCellBackgroundColour(r, 7, c)
                 pass
         pass
 
@@ -147,20 +153,30 @@ class MainWindow(wx.Frame):
         self.rt.logf = lambda x: self.log(x)
 
         self.rt.init()
-        while self.rt.check():
-            self.rsilog.Clear()
-            selected, delay = self.rt.run(self.update_rsi)
-            self.rsiret.Clear()
-            if len(selected) > 0:
-                for s in selected:
-                    self.rsi(s[0])
 
-                self.Show()
-            if self.rt.mode == 1:
-                time.sleep(delay)
-                self.log(f'sleep {delay}s')
-            else:
-                time.sleep(3)
+        lastrsi = []
+
+        try:
+            while self.rt.check():
+                self.rsilog.Clear()
+                selected, delay = self.rt.run(self.update_rsi)
+                self.rsiret.Clear()
+                if len(selected) > 0:
+                    for s in selected:
+                        self.rsi(s[0])
+
+                    if len(lastrsi) != len(selected):
+                        lastrsi = selected
+                        self.Raise()
+
+                if self.rt.mode == 1:
+                    time.sleep(delay)
+                    self.log(f'sleep {delay}s')
+                else:
+                    time.sleep(3)
+        except Exception as ex:
+            notifywin('rsi thread exit', 'rsi error' + str(ex))
+            pass
 
     def on_stop_rsi(self, event):
         if self.thread is None:
@@ -186,9 +202,9 @@ class MainWindow(wx.Frame):
         dt = time.strftime("%Y-%m-%d %H:%M:%S", t)
         self.SetStatusText(dt, 0)  # 显示年月日
 
-        if datetime.datetime.now().second % 5 == 0:
-            d0 = get_stock('sh000001')
-            d1 = get_stock('sz399006')
+        if datetime.datetime.now().second % 7 == 0:
+            d0 = get_stock_kline('sh000001')
+            d1 = get_stock_kline('sz399006')
             if d0 is not None:
                 self.SetStatusText('sh:{:.2f}'.format(d0['close'][0]), 2)
             else:
@@ -197,6 +213,13 @@ class MainWindow(wx.Frame):
                 self.SetStatusText('cyb:{:.2f}'.format(d1['close'][0]), 3)
             else:
                 self.SetStatusText('', 3)
+
+        if datetime.datetime.now().second % 20 == 0:
+            r = get_stock_rsi('sh510050', n=10, count=60)
+            self.SetStatusText(f'50etf: {r:.2f}', 4)
+            r = get_stock_rsi('sh510300', n=10, count=60)
+            self.SetStatusText(f'300etf: {r:.2f}', 5)
+            pass
 
     def OnAbout(self, e):
         # A message dialog box with an OK button. wx.OK is a standard ID in wxWidgets.
@@ -215,6 +238,7 @@ if __name__ == '__main__':
         app = wx.App(False)
         frame = MainWindow(None, "rsi")
         app.MainLoop()
-    except:
+    except Exception as e:
+        print(e)
         notifywin('rsi exit', 'rsi error')
         pass

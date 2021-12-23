@@ -10,8 +10,8 @@ class MaCross5(SelectFuncObj):
 
     def __init__(self):
         super(MaCross5, self).__init__()
-        self.ma0 = 3
-        self.ma1 = 20
+        self.ma0 = 5
+        self.ma1 = 10
         self.desc = 'ma{}cross{}'.format(self.ma0, self.ma1)
 
     def run(self, df, stock, dayoffset):

@@ -1,7 +1,8 @@
 import os
 
 from Ashare import get_price
-from eqdata.z_readstocks import *
+
+import pandas as pd
 
 
 class EXCHANGE(object):
@@ -67,38 +68,79 @@ def download_data_day(codes):
         df.to_csv('./temp/{}.csv'.format(c))
 
 
-def download_rsi_data_60m(codes):
+def download_rsi_data(codes, freq='5m', count=60):
     for c in codes:
         try:
-            dc = 50
-            df = get_price(c, frequency='60m', count=dc)  # 分钟线实时行情，可用'1m','5m','15m','30m','60m'
+            df = get_price(c, frequency=freq, count=count)  # 分钟线实时行情，可用'1m','5m','15m','30m','60m'
             # print('{}60分钟线\n'.format(c), df)
             df = df.reset_index()
             df.rename({'': 'date'}, axis=1, inplace=True)
             # print('download', c, ' df', df.shape[0])
-            df.to_pickle('./temp/{}_60m.pkl'.format(c))
+            df.to_pickle('./temp/{}_{}.pkl'.format(c, freq))
             # df.to_csv('./temp/{}.csv'.format(c))
         except Exception as ex:
-            os.remove('./temp/{}_60m.pkl'.format(c))
+            os.remove('./temp/{}_{}.pkl'.format(c, freq))
             print('download error', c, ex)
         pass
 
 
-def download_rsi_data_1m(codes):
-    for c in codes:
-        try:
-            dc = 5
-            df = get_price(c, frequency='1m', count=dc)  # 分钟线实时行情，可用'1m','5m','15m','30m','60m'
-            # print('{}60分钟线\n'.format(c), df)
-            df = df.reset_index()
-            df.rename({'': 'date'}, axis=1, inplace=True)
-            # print('download', c, ' df', df.shape[0])
-            df.to_pickle('./temp/{}_1m.pkl'.format(c))
-            # df.to_csv('./temp/{}_1m.csv'.format(c))
-        except Exception as ex:
-            os.remove('./temp/{}_1m.pkl'.format(c))
-            print('download error', c, ex)
-        pass
+def read_codes_nomalized():
+    with open('short.txt', 'r', encoding='utf-8') as fs:
+        lines = fs.readlines()
+        lines = [l.strip('\r\n ') for l in lines]
+        lines = [l for l in lines if len(l) > 0]
+    return [normalize_code(c) for c in lines]
+
+
+def get_stock_kline(s, freq='1d', count=2):
+    try:
+        if len(s) == 6:
+            s = normalize_code(s)
+
+        df = get_price(s, frequency=freq, count=count)  # 分钟线实时行情，可用'1m','5m','15m','30m','60m'
+        # df = df.reset_index()
+        # df.rename({'': 'date'}, axis=1, inplace=True)
+        # df.to_pickle('./temp/{}_1m.pkl'.format(c[0:6]))
+        # df.to_csv('./temp/{}_1m.csv'.format(c[0:6]))
+        if df.empty:
+            return None
+        return df
+    except Exception as ex:
+        print('download error', s, ex)
+        return pd.DataFrame()
+    pass
+
+
+
+
+def read_txt_code(file):
+    with open(file, 'r', encoding='utf-8') as fs:
+        lines = fs.readlines()
+        lines = [l.strip('\r\n ') for l in lines]
+        lines = [l for l in lines if len(l) > 0]
+    return lines
+
+
+def read_xlsx_codes(excelfile):
+    if excelfile.endswith('xls'):
+        df = pd.read_csv(excelfile, encoding='gbk', sep='\t')
+        print('read csv success')
+    elif excelfile.endswith('xlsx'):
+        df = pd.read_excel(excelfile)
+        print('read excel success')
+    else:
+        raise NotImplementedError('file format')
+    df = df.iloc[:, 0]
+    codes = [str(r).lower() for r in df.values if len(str(r)) == 8]
+
+    with open(excelfile[:-4] + 'txt', 'w') as fs:
+        for c in codes:
+            fs.write('{}\n'.format(c))
+    pass
+
+    return codes
+
+
 
 
 import unittest
@@ -119,5 +161,28 @@ class Test_helper(unittest.TestCase):
 
         for s in stocks:
             print(normalize_code(s))
-            download_rsi_data_60m([normalize_code(s)])
+            download_rsi_data([normalize_code(s)], '60m')
         pass
+
+    def test_read_code(self):
+        codes = read_txt_code()
+        print(codes)
+
+    def test_read_xlsx_code(self):
+        df = pd.read_excel('short.xlsx')
+
+        df = df['代码']
+        df.reset_index()
+        df.to_csv('short.pkl')
+
+    def test_read_pkl_codes(self):
+        codes = read_xlsx_codes('short.xlsx')
+        print(codes)
+        codes = read_xlsx_codes('shortz.xlsx')
+        print(codes)
+
+    def test_xls(self):
+        df = pd.read_csv('short.xls', encoding='gbk', sep='\t')
+        print(df)
+        print(df.columns)
+        print(df.index)
