@@ -17,6 +17,32 @@ def get_trade_days(ndays):
     pass
 
 
+def get_trade_days(start, end):
+    """
+        from pick file index 获取交易日
+    """
+
+    pkl = pd.read_pickle(r'../rawdata/sh.000001.pkl')
+    days = pkl.loc[:, 'date']
+    days = list(days)
+    index = days.index(start)
+    if index < 0:
+        return days
+
+    if end == '':
+        return days[index:]
+        pass
+    else:
+        index2 = days.index(end)
+        if index2 < 0:
+            return days[index:]
+        return days[index:index2 + 1]
+        pass
+
+    return days
+    pass
+
+
 def get_trade_day(dayoff):
     """
         from pick file index 获取交易日

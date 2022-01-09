@@ -8,11 +8,14 @@ def read_ths_xlsx_to_df(file):
     elif file.endswith('xls'):
         print('read xls')
         df = pd.read_csv(file, encoding='gbk', sep='\t')
+        df['涨幅'] = df['涨幅'].str.strip('%')
+        df['换手'] = df['换手'].str.strip('%')
     else:
         print('file format error')
         raise ValueError('format')
 
     print(df.columns)
+
     df = df[['代码', '    名称', '开盘', '最高', '最低', '现价', '昨收', '总金额', '总市值', '总手', '换手', '涨幅', '所属行业']]
 
     cols = ['开盘', '最高', '最低', '现价', '昨收', '总金额', '总市值', '总手', '换手', '涨幅', ]

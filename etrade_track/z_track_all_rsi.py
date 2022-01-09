@@ -1,5 +1,5 @@
-from eqdata.z_helper import read_txt_code
-from eqdata.z_track_rsi import track_short_rsi
+from etrade_track.z_helper import read_txt_code
+from etrade_track.z_track_rsi import track_short_rsi
 
 
 if __name__ == '__main__':
@@ -10,6 +10,6 @@ if __name__ == '__main__':
     stocks2 = read_txt_code('shortz.txt')
     stocks.extend(stocks2)
 
-    track_short_rsi(stocks, True, 'all')
+    track_short_rsi(stocks, True)
 
     pass

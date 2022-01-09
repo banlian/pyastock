@@ -38,6 +38,9 @@ def get_kdf_from_pkl(s, isdate=True) -> pd.DataFrame:
         return None
 
     f = pd.read_pickle(file)
+
+    for c in f.columns[2:]:
+        f[c] = pd.to_numeric(f[c], errors='coerce')
     # f = f.astype(float, errors='ignore')
     # if isdate:
     #     f['date'] = pd.to_datetime(f['date'])

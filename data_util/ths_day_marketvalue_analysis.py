@@ -6,27 +6,11 @@ import pandas as pd
 
 from pylab import mpl
 
+from data_util.helper import read_ths_xlsx_to_df
+
 mpl.rcParams['font.sans-serif'] = ['SimHei']  # 指定默认字体
 mpl.rcParams['axes.unicode_minus'] = False  # 解决保存图像是负号'-'显示为方块的问题
 
-
-def update_market_value():
-    df = pd.read_excel(r'..\temp\Table1217.xlsx')
-    df = df[['代码', '总市值']]
-    print(df)
-
-    conn = sqlite3.connect('../stocks.db')
-
-    for r in df.iterrows():
-        name = r[1][0][2:]
-        if r[1][1] == '--':
-            continue
-        value = float(r[1][1]) / 100000000.0  # e
-
-        conn.execute('''update STOCKBASIC set marketvalue = {} where symbol={} '''.format(value, int(name)))
-
-    conn.commit()
-    pass
 
 
 def select_mv_count(mv):
@@ -121,11 +105,9 @@ def mapcolors():
 
 if __name__ == '__main__':
 
-    # update_market_value()
-
-    df = pd.read_excel(r'..\temp\Table1220.xlsx')
-    df.to_pickle('test.pkl')
-    df = pd.read_pickle('test.pkl')
+    df = read_ths_xlsx_to_df('../temp/Table1224.xls')
+    df.to_pickle('temp/test.pkl')
+    df = pd.read_pickle('temp/test.pkl')
 
     df = df[['    名称', '总市值', '所属行业', '涨幅']]
 

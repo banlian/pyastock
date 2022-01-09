@@ -15,7 +15,7 @@ def update_db_marketvalue(df):
 
     for r in df.iterrows():
         name = r[1][0][2:]
-        value = float(r[1][1]) / 100000000.0  # e
+        value = float(r[1][1]) / 1e8  # e
         if r[1][1] == '--' or math.isnan(value):
             print('skip', name, value)
             continue
@@ -66,6 +66,10 @@ if __name__ == '__main__':
     now = datetime.datetime.now()
     date = now.strftime('%m%d')
     dateindex = now.strftime('%Y-%m-%d')
+
+    date = '0107'
+    dateindex = '2022-01-07'
+
     file = '../temp/Table{}.xls'.format(date)
     print(file, dateindex)
 

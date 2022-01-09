@@ -81,7 +81,7 @@ def db_select_stockcodes():
 
 def db_select_stockids():
     with connectdb() as conn:
-        db = conn.execute('''select symbol from STOCKBASIC''')
+        db = conn.execute('''select symbol from STOCKBASIC where marketvalue>0''')
         res = db.fetchall()
     return [r[0] for r in res]
 

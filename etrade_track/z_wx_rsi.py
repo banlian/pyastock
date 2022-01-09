@@ -1,25 +1,29 @@
 import os
 import wx
 import wx.grid
+import asyncio
 
 import threading
 import time
 import datetime
+import asyncio
 
-from eqdata.z_algo_rsi import get_stock_rsi
-from eqdata.z_helper import get_stock_kline
-from eqdata.z_track_rsi import RsiTrack, notifywin
+from etrade_track.z_algo_rsi import get_stock_rsi
+from etrade_track.z_helper import get_stock_kline
+from etrade_track.z_track_rsi import RsiTrack, notifywin
 
 
 class MainWindow(wx.Frame):
     def __init__(self, parent, title):
-        wx.Frame.__init__(self, parent, title=title, size=(1500, 850))
+        wx.Frame.__init__(self, parent, title=title, size=(1500, 950))
 
         panel = wx.Panel(self)
 
         # rsi track obj
         self.rt = RsiTrack()
         self.rt.init()
+        self.rt.logf = self.log
+        self.rt.updatef = self.update_grid_rsi
         stockcount = len(self.rt.stocks)
 
         # rsi button
@@ -27,8 +31,10 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.on_start_rsi, self.btn_start_rsi)
         self.btn_stop_rsi = wx.Button(panel, label="stop rsi", pos=(100, 20))
         self.Bind(wx.EVT_BUTTON, self.on_stop_rsi, self.btn_stop_rsi)
+        self.btn_run_rsi = wx.Button(panel, label="run rsi", pos=(180, 20))
+        self.Bind(wx.EVT_BUTTON, self.on_run_rsi, self.btn_run_rsi)
 
-        self.checkbox = wx.CheckBox(panel, label='mode', pos=(180, 20))
+        self.checkbox = wx.CheckBox(panel, label='mode', pos=(260, 20))
         self.Bind(wx.EVT_CHECKBOX, self.on_mode_checked, self.checkbox)
 
         boxrsi = wx.StaticBox(panel, wx.ID_ANY, "rsi triggerd", pos=(20, 100), size=(600, 400))
@@ -96,9 +102,9 @@ class MainWindow(wx.Frame):
 
         self.Show(True)
 
-    def update_rsi(self, stock, rsi, close, delta, dclose, pct, rsi30m):
+    def update_grid_rsi(self, stock, rsi, close, delta, dclose, pct, rsi30m):
         r = self.rt.stocks.index(stock)
-        print('update rst', r)
+        # print('update grid', r)
         if r >= 0:
             if rsi is not None:
                 self.grid.SetCellValue(r, 2, str(rsi))
@@ -108,7 +114,7 @@ class MainWindow(wx.Frame):
                 self.grid.SetCellBackgroundColour(r, 3, c)
             if delta is not None:
                 self.grid.SetCellValue(r, 4, str(delta))
-                c = wx.GREEN if delta < 0 else wx.YELLOW if delta < 1 else wx.WHITE
+                c = wx.GREEN if delta < self.rt.rsi_triggr else wx.YELLOW if delta < self.rt.rsi_threshold else wx.WHITE
                 self.grid.SetCellBackgroundColour(r, 0, c)
                 self.grid.SetCellBackgroundColour(r, 1, c)
                 self.grid.SetCellBackgroundColour(r, 4, c)
@@ -124,7 +130,7 @@ class MainWindow(wx.Frame):
 
             if rsi30m is not None:
                 self.grid.SetCellValue(r, 7, str(rsi30m))
-                c = wx.RED if rsi30m < 20 else wx.GREEN if rsi30m > 80 else wx.WHITE
+                c = wx.RED if rsi30m < 25 else wx.GREEN if rsi30m > 75 else wx.WHITE
                 self.grid.SetCellBackgroundColour(r, 7, c)
                 pass
         pass
@@ -150,24 +156,23 @@ class MainWindow(wx.Frame):
         pass
 
     def run_rsi(self):
-        self.rt.logf = lambda x: self.log(x)
-
         self.rt.init()
 
-        lastrsi = []
-
+        lastselected = []
         try:
             while self.rt.check():
                 self.rsilog.Clear()
-                selected, delay = self.rt.run(self.update_rsi)
+
+                # run rsi check
+                selected, delay = self.rt.run()
+
+                # process results
                 self.rsiret.Clear()
                 if len(selected) > 0:
                     for s in selected:
-                        self.rsi(s[0])
-
-                    if len(lastrsi) != len(selected):
-                        lastrsi = selected
-                        self.Raise()
+                        self.log_rsi(f'{s[0]} {s[5]:%H:%M:%S}')
+                    self.save_rsi_last(selected)
+                    self.Raise()
 
                 if self.rt.mode == 1:
                     time.sleep(delay)
@@ -177,6 +182,9 @@ class MainWindow(wx.Frame):
         except Exception as ex:
             notifywin('rsi thread exit', 'rsi error' + str(ex))
             pass
+        pass
+
+    pass
 
     def on_stop_rsi(self, event):
         if self.thread is None:
@@ -188,11 +196,34 @@ class MainWindow(wx.Frame):
         self.thread = None
         pass
 
+    def on_run_rsi(self, event):
+
+        def run_once():
+            self.rt.init()
+
+            self.rsilog.Clear()
+
+            # run rsi check
+            selected, delay = self.rt.run()
+
+            # process results
+            self.rsiret.Clear()
+            if len(selected) > 0:
+                for s in selected:
+                    self.log_rsi(f'{s[0]} {s[5]:%H:%M:%S}')
+                self.save_rsi_last(selected)
+                self.Raise()
+
+        self.thread = threading.Thread(target=run_once, name='rsionce')
+        self.thread.start()
+
+        pass
+
     def log(self, log):
         self.rsilog.write(log + '\n')
         self.rsilog.ScrollLines(1)
 
-    def rsi(self, log):
+    def log_rsi(self, log):
         self.rsiret.write(log + '\n')
         self.rsiret.ScrollLines(1)
 
@@ -230,6 +261,13 @@ class MainWindow(wx.Frame):
     def OnExit(self, e):
         self.timer.Stop()
         self.Close(True)  # Close the frame.
+
+    def save_rsi_last(self, lastselected):
+        with open('lastrsi.csv', 'w') as fs:
+            for s in lastselected:
+                fs.write(','.join([str(v) for v in s]) + '\n')
+
+        pass
 
 
 if __name__ == '__main__':

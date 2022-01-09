@@ -1,9 +1,10 @@
-
 import datetime
 
 from data_util.db_util import update_db_marketvalue
 from data_util.fetch_data import fetch_index
 from data_util.fetch_update_data_by_xlsx import update_temp_pkls
+from data_util.helper import read_ths_xlsx_to_df
+from stockbase.stock_db import db_select_stockcodes
 
 
 def fetch_indexs():
@@ -13,7 +14,8 @@ def fetch_indexs():
 
 
 if __name__ == '__main__':
-    fetch_indexs()
+
+    #fetch_indexs()
 
     now = datetime.datetime.now()
     date = now.strftime('%m%d')
@@ -23,8 +25,6 @@ if __name__ == '__main__':
 
     # dateindex = '2021-12-16
     # file = '../temp/Table1216.xlsx'
+    update_temp_pkls(file, dateindex)
 
-    # update_temp_pkls(file, dateindex)
-
-    update_db_marketvalue(file)
     pass

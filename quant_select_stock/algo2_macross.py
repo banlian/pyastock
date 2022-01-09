@@ -12,14 +12,15 @@ class MaSequence(SelectFuncObj):
 
     def run(self, df, stock, dayoffset):
 
-        opens = df['open'][-self.ndays:]
-        closes = df['close'][-self.ndays:]
+        opens = df['open'][-self.ndays - 2:]
+        closes = df['close'][-self.ndays - 2:]
 
         ret = closes > opens
 
         rets = ret[-self.ndays:]
+        rets2 = ret[-self.ndays - 1:]
 
-        if all(rets):
+        if all(rets) == True and all(rets2) == False:
             return True
         return False
 
@@ -195,7 +196,8 @@ class MaCross2(SelectFuncObj):
 #         pass
 
 if __name__ == '__main__':
-    f0 = MaCross2()
+    f0 = MaSequence()
+    f0.ndays = 3
 
     # f0 = MaCloseCross()
 

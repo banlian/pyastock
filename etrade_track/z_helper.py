@@ -124,16 +124,18 @@ def read_txt_code(file):
 def read_xlsx_codes(excelfile):
     if excelfile.endswith('xls'):
         df = pd.read_csv(excelfile, encoding='gbk', sep='\t')
+        txtfile = excelfile[:-3] + 'txt'
         print('read csv success')
     elif excelfile.endswith('xlsx'):
         df = pd.read_excel(excelfile)
+        txtfile = excelfile[:-4] + 'txt'
         print('read excel success')
     else:
         raise NotImplementedError('file format')
     df = df.iloc[:, 0]
     codes = [str(r).lower() for r in df.values if len(str(r)) == 8]
 
-    with open(excelfile[:-4] + 'txt', 'w') as fs:
+    with open(txtfile, 'w') as fs:
         for c in codes:
             fs.write('{}\n'.format(c))
     pass
@@ -176,9 +178,9 @@ class Test_helper(unittest.TestCase):
         df.to_csv('short.pkl')
 
     def test_read_pkl_codes(self):
-        codes = read_xlsx_codes('short.xlsx')
+        codes = read_xlsx_codes('short.xls')
         print(codes)
-        codes = read_xlsx_codes('shortz.xlsx')
+        codes = read_xlsx_codes('shortz.xls')
         print(codes)
 
     def test_xls(self):

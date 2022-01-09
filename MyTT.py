@@ -12,7 +12,12 @@
 #以下所有函数如无特别说明，输入参数S均为numpy序列或者列表list，N为整型int
 #应用层1级函数完美兼容通达信或同花顺，具体使用方法请参考通达信
 
-import numpy as np; import pandas as pd
+import numpy as np
+import pandas as pd
+
+
+np.seterr(divide='ignore', invalid='ignore')
+
 
 #------------------ 0级：核心工具函数 --------------------------------------------      
 def RD(N,D=3):   return np.round(N,D)        #四舍五入取3位小数 

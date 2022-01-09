@@ -52,9 +52,9 @@ def update_pickle_by_ths_df(df, date=None):
              'preclose': c0,
              'volume': vol, 'amount': amount,
              'adjustflag': 2,
-             'turn': turn * 100,
+             'turn': turn,
              'tradestatus': 1,
-             'pctChg': percent * 100,
+             'pctChg': percent,
              'isST': 0
              }
         # print(df)

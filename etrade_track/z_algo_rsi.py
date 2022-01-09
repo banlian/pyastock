@@ -1,6 +1,6 @@
 import os.path
 
-from eqdata.z_helper import *
+from etrade_track.z_helper import *
 from stockbase.stock_db import *
 from MyTT import *
 

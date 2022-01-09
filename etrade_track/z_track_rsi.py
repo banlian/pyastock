@@ -8,7 +8,7 @@ import os
 import io
 import win10toast
 
-from eqdata.z_algo_rsi import *
+from etrade_track.z_algo_rsi import *
 from stockbase.stock_db import *
 
 toast = win10toast.ToastNotifier()
@@ -37,9 +37,9 @@ def in_trade_reset_time(now):
     pass
 
 
-def track_short_rsi(stocks, needupdate=True, file='short', notify=None, updatef=None, datetime: datetime = None):
-    rsi_threshold = 1.5
-
+def track_short_rsi(stocks, needupdate=True, logf=None, updatef=None, now: datetime = datetime.datetime.now(), rsithreshold=1.5, rsitrigger=0):
+    rsi_threshold = rsithreshold
+    rsi_trigger = rsitrigger
     selected = []
 
     for s in stocks:
@@ -48,10 +48,10 @@ def track_short_rsi(stocks, needupdate=True, file='short', notify=None, updatef=
         if needupdate:
             download_rsi_data(ncode, '60m')
             # print('update 60m', ncode)
-        if datetime is not None:
+        if now is not None:
             # 每2分钟更新rsi
-            if datetime.minute % 2 == 0:
-                download_rsi_data(ncode, '5m')
+            if now.minute % 3 == 0:
+                download_rsi_data(ncode, '15m')
 
         download_rsi_data(ncode, '1m')
 
@@ -83,42 +83,42 @@ def track_short_rsi(stocks, needupdate=True, file='short', notify=None, updatef=
             close = math.nan
 
         # 5m calc
-        file3 = './temp/{}_5m.pkl'.format(s)
+        file3 = './temp/{}_15m.pkl'.format(s)
         if os.path.exists(file3):
             rsi30m = get_rsi(pd.read_pickle(file3), 10)
         else:
             rsi30m = math.nan
 
-        # 更新界面
+        # 更新grid界面
         if updatef is not None:
             updatef(s, rsi, close1m, delta, close, pct, rsi30m)
 
         rsi_info = ''
-        if 0 <= delta <= rsi_threshold:
+        if rsi_trigger <= delta <= rsi_threshold:
             # 接近rsi触发
             rsi_info = '{} {:>3}  c: {:>7.2f}|{:>7.2f}|{:>5.2f}  ({}/{})'.format(s, db_id_to_name(s).strip(), close1m, rsi, delta, index, len(stocks))
-
-            # 更新日志
-            if notify is not None:
-                notify(rsi_info)
-            pass
-        elif delta < 0:
+        elif delta < rsi_trigger:
             # rsi触发
-            if close1m <= rsi:
-                rsi_info = '{} {:>3}  t: {:>7.2f}|{:>7.2f}|{:>5.2f}  ({}/{})'.format(s, db_id_to_name(s).strip(), close1m, rsi, delta, index, len(stocks))
-                # 触发rsi了
-                selected.append((rsi_info, s))
-        print(rsi_info)
+            # if close1m <= rsi:
+            rsi_info = '{} {:>3}  t: {:>7.2f}|{:>7.2f}|{:>5.2f}  ({}/{})'.format(s, db_id_to_name(s).strip(), close1m, rsi, delta, index, len(stocks))
+            # 触发rsi了
+            selected.append([rsi_info, s, db_id_to_name(s), rsi, close1m, now])
+
+        # 更新rsi日志
+        if len(rsi_info) > 0:
+            if logf is not None:
+                logf(rsi_info)
+            print(rsi_info)
 
     print('-------rsi trigger--------')
-    save_rsi_result(file, selected)
+    save_rsi_result('', selected)
     print('-------rsi trigger--------')
     return selected
     pass
 
 
 def save_rsi_result(file, selected):
-    file = '{}_rsi_track.csv'.format(file)
+    file = '{}_z_wx_rsi_track.csv'.format(file)
     content = ''
     with open(file, 'a+') as fs:
         fs.write('{}\n------------\n'.format(datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')))
@@ -129,36 +129,20 @@ def save_rsi_result(file, selected):
             content = content + line
         fs.write('------------')
 
-    # notify('rsi', content )
-
-
-#
-# import unittest
-#
-#
-# class Test_Rsi(unittest.TestCase):
-#
-#     def test_time(self):
-#         now = datetime.datetime.now()
-#
-#         t0 = datetime.time(9, 30, 00)
-#         t1 = datetime.time(11, 30, 00)
-#         t4 = datetime.time(13, 00, 00)
-#         t5 = datetime.time(15, 00, 00)
-#
-#         print(now.time())
-
 
 class RsiTrack(object):
 
     def __init__(self):
         self.mode = 1
         self.n = datetime.datetime.now()
-        self.is_update = True
         self.loopcount = 0
         self.logf = None
+        self.updatef = None
         self.stocks = []
         self.forcestop = False
+
+        self.rsi_threshold = 2
+        self.rsi_triggr = 0
         pass
 
     def log(self, log):
@@ -169,6 +153,7 @@ class RsiTrack(object):
 
     def init(self):
         stocks = read_txt_code('short.txt')
+        # if self.mode == 1:
         stocks2 = read_txt_code('shortz.txt')
         stocks2 = [s for s in stocks2 if s not in stocks]
         stocks.extend(stocks2)
@@ -177,26 +162,32 @@ class RsiTrack(object):
         self.stocknames = ['{}'.format(db_id_to_name(s)) for s in stocks]
         if self.mode == 0:
             self.n = datetime.datetime(2021, 12, 11, 9, 30, 00)
-            self.is_update = False
             pass
         else:
             self.n = datetime.datetime.now()
-            self.is_update = True
 
         self.loopcount = 0
 
         # 判断是否更新rsi数据
         self.lasthour = self.n.hour - 1
 
-    def update(self):
-        if self.is_update:
+    def updatenow(self):
+        if self.mode == 1:
             self.n = datetime.datetime.now()
+            print(f'{self.n} rsi threshold: {self.rsi_threshold} rsi trigger:{self.rsi_triggr}')
+        else:
+            self.n = self.n + datetime.timedelta(0, 1)
+            # self.rsi_triggr = self.rsi_triggr + 1
+            # self.rsi_threshold = self.rsi_threshold + 1
+            print(f'{self.n} rsi threshold: {self.rsi_threshold} rsi trigger:{self.rsi_triggr}')
 
     def check(self):
         return in_trade_time(self.n) and not self.forcestop
         pass
 
     def checkifupdatersi(self):
+        if self.loopcount == 0:
+            return True
         if self.mode == 0:
             return True
         # 9:30 10:30 13:00 14:00 更新rsi价格
@@ -204,14 +195,9 @@ class RsiTrack(object):
             return True
         return False
 
-    def run(self, *args):
+    def run(self):
         # 读取监控股票
         self.log('stocks:' + str(len(self.stocks)))
-
-        if len(args) > 0:
-            updatef = args[0]
-        else:
-            updatef = None
 
         # 中午休息
         if in_trade_reset_time(self.n):
@@ -220,7 +206,7 @@ class RsiTrack(object):
             else:
                 print(f'resting {self.n}')
             time.sleep(30)
-            self.update()
+            self.updatenow()
             return [], 0
             pass
 
@@ -230,7 +216,7 @@ class RsiTrack(object):
         updatersi = self.checkifupdatersi()
 
         t0 = time.time()
-        selected = track_short_rsi(self.stocks, updatersi, 'short', lambda s: self.log(s), updatef, self.n)
+        selected = track_short_rsi(self.stocks, updatersi, self.logf, self.updatef, self.n, self.rsi_threshold, self.rsi_triggr)
         et = time.time() - t0
         self.log(f'track stocks by {et:.2f} seconds')
 
@@ -240,7 +226,7 @@ class RsiTrack(object):
             delay = 1
 
         self.loopcount = self.loopcount + 1
-        self.update()
+        self.updatenow()
 
         self.log(f'trade time {self.n} {self.loopcount} finish.........')
 
