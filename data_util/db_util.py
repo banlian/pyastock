@@ -9,7 +9,7 @@ from stockbase.stock_db import db_select_stockcodes
 
 def update_db_marketvalue(df):
     df = df[['代码', '总市值']]
-    print(df)
+    # print(df)
 
     conn = sqlite3.connect('../stocks.db')
 
@@ -43,7 +43,7 @@ def update_db_stocks(df):
         if s[2:] not in dbstocks:
             tscode = f'{s[2:]}.{s[:2]}'
             row = df[df['代码'] == s]
-            print(row)
+            # print(row)
             symbol = int(s[2:])
             name = row['    名称'].values[0]
             ind = row['所属行业'].values[0]
@@ -56,9 +56,41 @@ def update_db_stocks(df):
     conn.commit()
     conn.close()
 
+    dbstocks = db_select_stockcodes()
+    print(f'dbstocks {len(dbstocks)}')
+
     print('udpate market value finish')
 
     pass
+
+
+def update_misc(df):
+    def ts_code(code):
+        if len(code) == 8:
+            return f'{code[2:]}.{code[:2]}'
+        else:
+            return ''
+
+    conn = sqlite3.connect('../stocks.db')
+
+    for i, row in df.iterrows():
+        code = row.loc['代码']
+        bk = row.loc['细分行业']
+        pe = row.loc['TTM市盈率']
+        pb = row.loc['市净率']
+        # print(code, bk, pe, pb)
+        if math.isnan(pe):
+            pe = 0
+        if math.isnan(pb):
+            pb = 0
+        tc = ts_code(code)
+        if len(tc) == 9:
+            conn.execute('''update STOCKBASIC set pe={}, pb={}, bk='{}' where ts_code = '{}' '''.format(pe, pb, bk, tc))
+            # conn.commit()
+            # print(f'update {i} {tc} {pe} {pb} {bk}')
+        # break
+    conn.commit()
+    conn.close()
 
 
 if __name__ == '__main__':
@@ -67,15 +99,22 @@ if __name__ == '__main__':
     date = now.strftime('%m%d')
     dateindex = now.strftime('%Y-%m-%d')
 
-    date = '0107'
-    dateindex = '2022-01-07'
+    # date = '0107'
+    # dateindex = '2022-01-07'
 
     file = '../temp/Table{}.xls'.format(date)
     print(file, dateindex)
 
     df = read_ths_xlsx_to_df(file)
 
+    # 更新股票
     update_db_stocks(df)
 
+    # 更新市值
     update_db_marketvalue(df)
+
+    # 更新 pe pb bk
+    update_misc(df)
+
+    print('update all finish')
     pass

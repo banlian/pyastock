@@ -45,44 +45,28 @@ def track_short_rsi(stocks, needupdate=True, logf=None, updatef=None, now: datet
     for s in stocks:
         index = stocks.index(s)
         ncode = [s]
+
         if needupdate:
-            download_rsi_data(ncode, '60m')
-            # print('update 60m', ncode)
-        if now is not None:
-            # 每2分钟更新rsi
-            if now.minute % 3 == 0:
-                download_rsi_data(ncode, '15m')
-
-        download_rsi_data(ncode, '1m')
-
+            download_rsi_data(ncode, '60m', 60)
+            #print('update 60m', ncode)
         # hour calc
         file1 = './temp/{}_60m.pkl'.format(s)
         if not os.path.exists(file1):
-            print('skip rsi data error', s)
+            print('skip 60m data error', s)
             continue
         df = pd.read_pickle(file1.format(s))
+        rsis = get_rsi_price_hour(df)
+        rsi = rsis[-1]
 
-        close = df['close'].values[-1]
-        rsi = get_rsi_price_hour(df)[-1]
-        rsi = round(rsi, 2)
-
-        # 1m calc
-        file2 = './temp/{}_1m.pkl'.format(s)
-        if not os.path.exists(file2):
-            print('skip 1m data error', s)
-            continue
-        df1 = pd.read_pickle(file2)
-        if not df1.empty:
-            close1m = df1['close'].values[-1]
-            delta = round((close1m - rsi) / close1m * 100, 2)
-            pct, close = get_stock_pct(s)
-        else:
-            close1m = math.nan
-            delta = 0
-            pct = 0
-            close = math.nan
+        pct, close = get_stock_pct(s)
+        close1m = close
+        delta = round((close1m - rsi) / close1m * 100, 2)
 
         # 5m calc
+        if now is not None:
+            # 每2分钟更新rsi
+            if now.minute % 3 == 0 or needupdate:
+                download_rsi_data(ncode, '15m')
         file3 = './temp/{}_15m.pkl'.format(s)
         if os.path.exists(file3):
             rsi30m = get_rsi(pd.read_pickle(file3), 10)
@@ -136,6 +120,7 @@ class RsiTrack(object):
         self.mode = 1
         self.n = datetime.datetime.now()
         self.loopcount = 0
+        self.manual = False
         self.logf = None
         self.updatef = None
         self.stocks = []
@@ -186,7 +171,7 @@ class RsiTrack(object):
         pass
 
     def checkifupdatersi(self):
-        if self.loopcount == 0:
+        if self.loopcount == 0 or self.manual:
             return True
         if self.mode == 0:
             return True

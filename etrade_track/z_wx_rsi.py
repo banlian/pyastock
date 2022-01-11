@@ -199,7 +199,9 @@ class MainWindow(wx.Frame):
     def on_run_rsi(self, event):
 
         def run_once():
+
             self.rt.init()
+            self.rt.manual = True
 
             self.rsilog.Clear()
 
@@ -213,6 +215,8 @@ class MainWindow(wx.Frame):
                     self.log_rsi(f'{s[0]} {s[5]:%H:%M:%S}')
                 self.save_rsi_last(selected)
                 self.Raise()
+
+            self.rt.manual = False
 
         self.thread = threading.Thread(target=run_once, name='rsionce')
         self.thread.start()

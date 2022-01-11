@@ -15,7 +15,7 @@ def fetch_indexs():
 
 if __name__ == '__main__':
 
-    #fetch_indexs()
+    fetch_indexs()
 
     now = datetime.datetime.now()
     date = now.strftime('%m%d')

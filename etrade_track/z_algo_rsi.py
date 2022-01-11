@@ -20,7 +20,7 @@ def get_stock_pct(c):
         return round((c1 - c0) / c0 * 100, 2), c1
     except Exception as ex:
         print('download error', c, ex)
-        return 0, 0
+        return 0, math.nan
     pass
 
 
@@ -45,13 +45,28 @@ def get_rsi(df, n=10):
         return math.nan
 
 
+def RSIP(df):
+    C = df['close']
+    C = C.dropna()
+    C = pd.to_numeric(C)
+    C = np.array(C)
+    Z = SMA(MAX(C - REF(C, 1), 1e-6), 6, 1)
+    Y = SMA(MAX(ABS(C - REF(C, 1)), 1e-6), 6, 1)
+    R1 = Y * 5 - Z * 25 + C
+    R2 = Y * 5 / 4 - Z * 25 / 4 + C
+    R0 = IF(Z / Y < 0.2, R2, R1)
+    R = REF(R0, 1)
+
+    return R
+
+
 def get_rsi_price_hour(df):
     C = df['close']
     C = C.dropna()
     C = pd.to_numeric(C)
     C = np.array(C)
-    Z = SMA(MAX(C - REF(C, 1), 0), 6, 1)
-    Y = SMA(ABS(C - REF(C, 1)), 6, 1)
+    Z = SMA(MAX(C - REF(C, 1), 1e-6), 6, 1)
+    Y = SMA(MAX(ABS(C - REF(C, 1)), 1e-6), 6, 1)
     R1 = Y * 5 - Z * 25 + C
     R2 = Y * 5 / 4 - Z * 25 / 4 + C
     R0 = IF(Z / Y < 0.2, R2, R1)
@@ -132,7 +147,6 @@ class Test_algo_rsi(unittest.TestCase):
 
     def test_get_stock_rsi(self):
         r = get_stock_rsi('sh510300', n=10, count=60)
-
 
         pass
 

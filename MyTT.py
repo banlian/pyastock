@@ -114,8 +114,9 @@ def KDJ(CLOSE,HIGH,LOW, N=9,M1=3,M2=3):           # KDJ指标
     return K, D, J
 
 def RSI(CLOSE, N=24):                           # RSI指标,和通达信小数点2位相同
-    DIF = CLOSE-REF(CLOSE,1) 
-    return RD(SMA(MAX(DIF,0), N) / SMA(ABS(DIF), N) * 100)  
+    DIF = CLOSE-REF(CLOSE,1)
+    DIF[np.abs(DIF) < 1e-12] = 1e-12
+    return RD(SMA(MAX(DIF,0), N) / SMA(ABS(DIF), N) * 100)
 
 def WR(CLOSE, HIGH, LOW, N=10, N1=6):            #W&R 威廉指标
     WR = (HHV(HIGH, N) - CLOSE) / (HHV(HIGH, N) - LLV(LOW, N)) * 100

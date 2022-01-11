@@ -1,3 +1,4 @@
+
 import math
 import sqlite3
 import time
@@ -8,24 +9,9 @@ from pylab import mpl
 
 from data_util.helper import read_ths_xlsx_to_df
 
-mpl.rcParams['font.sans-serif'] = ['SimHei']  # Ö¸¶¨Ä¬ÈÏ×ÖÌå
-mpl.rcParams['axes.unicode_minus'] = False  # ½â¾ö±£´æÍ¼ÏñÊÇ¸ººÅ'-'ÏÔÊ¾Îª·½¿éµÄÎÊÌâ
+mpl.rcParams['font.sans-serif'] = ['SimHei']  # æŒ‡å®šé»˜è®¤å­—ä½“
+mpl.rcParams['axes.unicode_minus'] = False  # è§£å†³ä¿å­˜å›¾åƒæ˜¯è´Ÿå·'-'æ˜¾ç¤ºä¸ºæ–¹å—çš„é—®é¢˜
 
-
-def mapcolor1(v):
-    r = v
-    if math.isnan(r):
-        return '#000000'
-
-    if r < 0:
-        c = min(abs(r) / 7 * 205 + 50, 255)
-        c = int(c)
-        return '#00{:02x}00'.format(c)
-    else:
-        c = min(abs(r) / 7 * 205 + 50, 255)
-        c = int(c)
-        return '#{:02x}0000'.format(c)
-    pass
 
 
 def mapcolor(v):
@@ -50,54 +36,52 @@ def mapcolors():
     pass
 
 
-def process_df():
-    df = read_ths_xlsx_to_df('../temp/Table1224.xls')
-    df.to_pickle('temp/test.pkl')
-    df = pd.read_pickle('temp/test.pkl')
+df = pd.read_csv('../temp/Table0107.xls', encoding='gbk', sep='\t')
+df['æ¶¨å¹…'] = df['æ¶¨å¹…'].str.strip('%')
+df['æ¢æ‰‹'] = df['æ¢æ‰‹'].str.strip('%')
+df['5æ—¥æ¶¨å¹…'] = df['5æ—¥æ¶¨å¹…'].str.strip('%')
 
-    df = df[['    Ãû³Æ', '×ÜÊĞÖµ', 'ËùÊôĞĞÒµ', 'ÕÇ·ù']]
+df.to_pickle('temp/test.pkl')
+#df = pd.read_pickle('temp/test.pkl')
 
-    df['×ÜÊĞÖµ'] = pd.to_numeric(df['×ÜÊĞÖµ'], errors='coerce')
-    df['ÕÇ·ù'] = pd.to_numeric(df['ÕÇ·ù'], errors='coerce')
-    df['×ÜÊĞÖµ'] = round(df['×ÜÊĞÖµ'] / 1e8, 1)
-    df['ÕÇ·ù'] = round(df['ÕÇ·ù'] * 100, 1)
+df = df[['    åç§°', 'æ€»å¸‚å€¼', 'æ‰€å±è¡Œä¸š', 'æ¶¨å¹…', '5æ—¥æ¶¨å¹…']]
 
-    df = df[df['×ÜÊĞÖµ'] > 10]
-
-    df['all'] = 'all'
-    df['color'] = df['ÕÇ·ù'].map(mapcolor)
-
-    print(df)
+df['æ€»å¸‚å€¼'] = pd.to_numeric(df['æ€»å¸‚å€¼'], errors='coerce')
+df['æ¶¨å¹…'] = pd.to_numeric(df['æ¶¨å¹…'], errors='coerce')
+df['5æ—¥æ¶¨å¹…'] = pd.to_numeric(df['5æ—¥æ¶¨å¹…'], errors='coerce')
+df['æ€»å¸‚å€¼'] = round(df['æ€»å¸‚å€¼'] / 1e8, 1)
+df['æ¶¨å¹…'] = round(df['5æ—¥æ¶¨å¹…'], 1)
 
 
-def df_treemap(df):
-    import plotly.express as px
-    mcolors = mapcolors()
-    mcolors['(?)'] = '#999999'
 
-    fig = px.treemap(df,
-                     path=['all', 'ËùÊôĞĞÒµ', '    Ãû³Æ'],
-                     # labels='ÕÇ·ù',
-                     # names='    Ãû³Æ',
-                     values='×ÜÊĞÖµ',
-                     color='color',
-                     custom_data=['ÕÇ·ù'],
-                     color_discrete_map=mcolors,
-                     hover_data=['ÕÇ·ù'],
-                     )
-    fig.update_traces(root_color="lightgray",
-                      texttemplate='<b>%{label}</b><br><b>%{value:.2f}</b><br><b>%{customdata[0]:.2f}</b><br>',
-                      )
-    fig.update_layout(margin=dict(t=1, l=1, r=1, b=1))
-    img = fig.to_image('png')
-    with open('test.png', 'wb') as fs:
-        fs.write(img)
-    fig.show()
+#%%
 
+df = df[df['æ€»å¸‚å€¼'] > 1]
 
-if __name__ == '__main__':
+df['all'] = 'all'
+df['color'] = df['æ¶¨å¹…'].map(mapcolor)
 
-    df = process_df()
+print(df)
 
-    df_treemap(df)
-    pass
+import plotly.express as px
+mcolors = mapcolors()
+mcolors['(?)'] = '#999999'
+
+fig = px.treemap(df,
+                 path=['all', 'æ‰€å±è¡Œä¸š', '    åç§°'],
+                 # labels='æ¶¨å¹…',
+                 # names='    åç§°',
+                 values='æ€»å¸‚å€¼',
+                 color='color',
+                 custom_data=['æ¶¨å¹…'],
+                 color_discrete_map=mcolors,
+                 hover_data=['æ¶¨å¹…'],
+                 )
+fig.update_traces(root_color="lightgray",
+                  texttemplate='<b>%{label}</b><br><b>%{value:.2f}</b><br><b>%{customdata[0]:.2f}</b><br>',
+                  )
+fig.update_layout(margin=dict(t=1, l=1, r=1, b=1))
+img = fig.to_image('png')
+with open('temp/test.png', 'wb') as fs:
+    fs.write(img)
+fig.show()
