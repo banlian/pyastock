@@ -62,7 +62,7 @@ def quant_select_save(file, results, percents=None):
             for r in results:
                 fs.write('{},{},{},{}\n'.format(r[0], db_id_to_name(r[0]), db_id_to_industry(r[0]), r[1]))
             pass
-            fs.write(file)
+            # fs.write(file)
 
     else:
         with open(file, 'w', encoding='utf-8') as fs:
@@ -72,7 +72,7 @@ def quant_select_save(file, results, percents=None):
 
             fs.write(quant_select_result_stat('', [r[0] for r in results], percents) + '\n')
             pass
-            fs.write(file)
+            # fs.write(file)
     pass
 
 

@@ -118,6 +118,20 @@ def RSI(CLOSE, N=24):                           # RSI指标,和通达信小数�
     DIF[np.abs(DIF) < 1e-12] = 1e-12
     return RD(SMA(MAX(DIF,0), N) / SMA(ABS(DIF), N) * 100)
 
+
+def RSIP(df):
+    C = df['close']
+    C = C.dropna()
+    C = pd.to_numeric(C)
+    C = np.array(C)
+    Z = SMA(MAX(C - REF(C, 1), 1e-6), 6, 1)
+    Y = SMA(MAX(ABS(C - REF(C, 1)), 1e-6), 6, 1)
+    R1 = Y * 5 - Z * 25 + C
+    R2 = Y * 5 / 4 - Z * 25 / 4 + C
+    R0 = IF(Z / Y < 0.2, R2, R1)
+    R = REF(R0, 1)
+    return R
+
 def WR(CLOSE, HIGH, LOW, N=10, N1=6):            #W&R 威廉指标
     WR = (HHV(HIGH, N) - CLOSE) / (HHV(HIGH, N) - LLV(LOW, N)) * 100
     WR1 = (HHV(HIGH, N1) - CLOSE) / (HHV(HIGH, N1) - LLV(LOW, N1)) * 100

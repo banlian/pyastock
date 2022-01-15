@@ -25,14 +25,15 @@ def get_df_ndays(df, ndays):
 
 def get_kdf_from_pkl(s, isdate=True) -> pd.DataFrame:
     if not isinstance(s, int):
-        # print('get pickle error, stock is not int', s)
-        temp = s
-        s = db_name_to_id(s)
-        if s is None:
-            print('find stock id error', temp)
-            return None
+        if len(s) != 8:
+            # print('get pickle error, stock is not int', s)
+            temp = s
+            s = db_name_to_id(s)
+            if s is None:
+                print('find stock id error', temp)
+                return None
 
-    file = r'..\rawdata\{}.pkl'.format(get_pkl_filename(s))
+    file = get_pkl_filename(s)
     if not os.path.exists(file):
         # print('find pkl error', s)
         return None
@@ -70,11 +71,11 @@ def get_pkl_filename(s):
         return None
 
     if s == 300 or s == 999999:
-        return 'sh.{0:0>6d}'.format(s)
+        return f'../rawdata/sh.{0:0>6d}'.format(s)
     if 600000 <= s < 699999:
-        return 'sh.{0}'.format(s)
+        return f'../rawdata/sh.{0}'.format(s)
     if s < 10000 or (399999 > s > 300000):
-        return 'sz.{0:0>6d}'.format(s)
+        return f'../rawdata/sz.{0:0>6d}'.format(s)
 
     # print('get_pkl_filename error: stock over range ', s)
     return None

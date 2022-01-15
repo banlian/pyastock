@@ -1,25 +1,25 @@
-
-#%%
+# %%
 # rsi 连续买卖测试
 
 import datetime
 import math
+import time
 
 from MyTT import *
 from etrade_track.z_algo_rsi import *
 from etrade_track.z_helper import *
 
 
-
 def getday(dt):
     dt = datetime.datetime.utcfromtimestamp(dt.astype('O') / 1e9)
-    # print(dt.day)
-    return dt.day
+    deltaday = dt.date() - datetime.date(2021, 1, 1)
+    return deltaday.days
     pass
 
-def format_np_datetime(dt):
+
+def fdate(dt):
     dt = datetime.datetime.utcfromtimestamp(dt.astype('O') / 1e9)
-    return dt.isoformat()
+    return dt.strftime('%Y-%m-%d %H:%M:%S')
 
 
 def rsi_fuck_df_cts(df, si=-20, ei=0, s0pct=3, s1pct=5, enrsi=False, dpct=0.5, dcount=3):
@@ -33,7 +33,7 @@ def rsi_fuck_df_cts(df, si=-20, ei=0, s0pct=3, s1pct=5, enrsi=False, dpct=0.5, d
     date = df['date'].values
 
     op = []  # 操作记录
-    hold = 0  #  买入状态
+    hold = 0  # 买入状态
     holddate = 0  # 买入日期
     holdp = 0  # 买入价格
     hdelta = 0  # 冲高监控最小单位
@@ -49,22 +49,28 @@ def rsi_fuck_df_cts(df, si=-20, ei=0, s0pct=3, s1pct=5, enrsi=False, dpct=0.5, d
         low = df['low'].values[ri]
         high = df['high'].values[ri]
         close = df['close'].values[ri]
+        open = df['open'].values[ri]
         rsip = round(rsi[ri], 2)
+
+        # print(date[ri], hold)
 
         if hold == 0:
             # 买入判断
             # empty wait to buy
             # if low < rsip and rsiv[ri] <= 20:
             if low < rsip:
-                close10 = max(df['high'].values[ri - 10:ri])
-                delta = (close - close10) / close10 * 100
+                close10 = max(df['high'].values[ri - 10:ri - 1])
+                low10 = min(df['low'].values[ri - 10:ri - 1])
+                delta = (low10 - close10) / close10 * 100
                 if delta > -2 or delta < -6:
                     # 相对前十个小时最高收盘价
+                    print(f'skip delta {fdate(date[ri])} {delta:.2f}')
                     continue
                     pass
                 if enrsi and rsiv[ri] > 20:
                     # 启用 rsi 判断 且 rsi 未触发
                     # 跳过
+                    print(f'skip rsi {date[ri]} {rsiv[ri]:.2f}')
                     continue
                     pass
                 # buy
@@ -75,7 +81,7 @@ def rsi_fuck_df_cts(df, si=-20, ei=0, s0pct=3, s1pct=5, enrsi=False, dpct=0.5, d
                 holddate = date[ri]
                 sell1p = round(rsip * (100 + s1pct) / 100, 2)
                 sell0p = round(rsip * (100 - s0pct) / 100, 2)
-                op.append([1, rsip, date[ri]])
+                op.append([1, rsip, fdate(date[ri])])
                 # print(f'buy:{rsip:.2f} {date[ri]}')
                 # print('sell0p', sell0p)
                 # print('sell1p', sell1p)
@@ -87,7 +93,7 @@ def rsi_fuck_df_cts(df, si=-20, ei=0, s0pct=3, s1pct=5, enrsi=False, dpct=0.5, d
                 # 股价超过止损线
                 # 止损
                 if hold > 0:
-                    op.append([-1, sell0p, date[ri]])
+                    op.append([-1, sell0p, fdate(date[ri])])
                     # print(f'sell0:{sell0p:.2f} {date[ri]}')
                     selldate = date[ri]
                     hold = -1
@@ -99,20 +105,20 @@ def rsi_fuck_df_cts(df, si=-20, ei=0, s0pct=3, s1pct=5, enrsi=False, dpct=0.5, d
                     holdhigh = high
                     hdelta = holdhigh * dpct / 100
                     # print(f'update high:{holdhigh}')
-                # 冲高
-                if holdhigh > 0:
+                # 冲高 高点大于成本线
+                if holdhigh > holdp:
                     # 回落止盈价格
-                    highp = holdhigh - dcount * hdelta
-                    # 高点回落
-                    if close < highp:
+                    highp = round(holdhigh - dcount * hdelta, 2)
+                    # 低点小于回落止盈价格
+                    if low < highp and close < open:
                         if hold > 0:
                             if highp > holdp:
                                 # 回撤至固定点位卖出
-                                op.append([0, highp, format_np_datetime(date[ri])])
+                                op.append([0, highp, fdate(date[ri])])
                                 # print(f'sell1:{highp:.2f} {date[ri]}')
                             else:
                                 # 回撤至原价卖出
-                                op.append([-1, holdp, format_np_datetime(date[ri])])
+                                op.append([-1, holdp, fdate(date[ri])])
                                 # print(f'sell0:{holdp:.2f} {date[ri]}')
                             selldate = date[ri]
                             hold = -1
@@ -121,18 +127,18 @@ def rsi_fuck_df_cts(df, si=-20, ei=0, s0pct=3, s1pct=5, enrsi=False, dpct=0.5, d
                 # 最后强制卖出
                 if close > holdp:
                     # 止盈
-                    op.append([0, close, format_np_datetime(date[ri])])
+                    op.append([0, close, fdate(date[ri])])
                     # print(f'sell1:{highp:.2f} {date[ri]}')
                 else:
                     # 止损
-                    op.append([-1, close, format_np_datetime(date[ri])])
+                    op.append([-1, close, fdate(date[ri])])
                     # print(f'sell0:{holdp:.2f} {date[ri]}')
                 hold = -1
                 pass
 
         if hold == -1:
             # 卖空后 隔日继续判断买入
-            if getday(date[ri]) != getday(selldate):
+            if getday(date[ri]) - getday(selldate) > 1:
                 # wait next day to continue buy
                 hold = 0
             pass
@@ -163,9 +169,8 @@ def formatop(ops):
         return opstr + ',,,'
 
     opstr = ','.join([','.join([str(o) for o in op]) for op in ops])
-    #print(opstr)
+    # print(opstr)
     return opstr
-
 
 
 def get_codes():
@@ -173,17 +178,97 @@ def get_codes():
     df = pd.read_csv('../temp/Table0111.xls', encoding='gbk', sep='\t')
     df['总市值'] = pd.to_numeric(df['总市值'], errors='coerce')
     df['总市值'] = df['总市值'] / 1e8
-    df = df[df['总市值'] < 1000]
-    df = df[df['总市值'] > 500]
+    df = df[df['总市值'] < 30000]
+    df = df[df['总市值'] > 10]
 
     code = df.iloc[:, 1]
     print(len(code))
     return code
 
-c='sh603486'
-download_rsi_data([c], '60m', 4 * 5 * 20)
-df = pd.read_pickle(f'temp/{c}_60m.pkl')
-ops, pct = rsi_fuck_df_cts(df, si=-4*5*20, ei=0, dcount=6)
-for op in ops:
-    print(op)
-print(pct)
+
+def preparedf(c, dflen=320):
+    download_rsi_data([c], '60m', dflen)
+    df = pd.read_pickle(f'temp/{c}_60m.pkl')
+    return df
+    pass
+
+
+def preparedf1(c):
+    df = pd.read_pickle(f'temp/{c}_60m.pkl')
+    return df
+    pass
+
+
+def preparedfday(c):
+    code = f'{c[:2]}.{c[2:]}'
+    df = pd.read_pickle(f'../rawdata/{code}.pkl')
+    return df
+
+
+def fuckdf(df):
+    df['ma5'] = MA(df['close'], 5)
+    df['ma10'] = MA(df['close'], 10)
+    df['ma20'] = MA(df['close'], 20)
+    df['ma30'] = MA(df['close'], 30)
+    df['rsi'] = RSI(df['close'], 6)
+    boll = BOLL(df['close'], 20, 2)
+    df['bollup'] = boll[0]
+    df['bollmid'] = boll[1]
+    df['bolldown'] = boll[2]
+    return df
+
+
+def backtest_allstocks():
+    dflen = 320
+
+    codes = get_codes().values
+    codes = [str.lower(c) for c in codes]
+    print(codes)
+
+    tt0 = time.time()
+
+    with open('table0111_backtest_week50.csv', 'w') as fs:
+        for c in codes:
+            try:
+                index = codes.index(c)
+                print(index, c, 'start...')
+                t0 = time.time()
+                df = preparedf(c)
+
+                ssi = df.shape[0]
+                print(ssi)
+                ops, pct = rsi_fuck_df_cts(df, si=-ssi, ei=0, enrsi=False, dpct=0.5, dcount=3)
+
+                pctsum = sum(pct)
+                pct1 = len([p for p in pct if p > 0])
+                pct0 = len([p for p in pct if p <= 0])
+
+                fs.write(f'{c},{db_id_to_name(c)},{pctsum:.2f},{pctsum / len(pct):.2f}, {pct1 / len(pct) * 100:.2f},{pct0 / len(pct) * 100:.2f},{len(ops)},{formatop(ops)}\n')
+
+                et = time.time() - t0
+                print(index, c, f'finish... {et:.2f}s {index}/{len(codes)}')
+            except Exception as ex:
+                print(c, ex)
+
+    ett = time.time() - tt0
+    print(f'backtest finish {ett:.2f}s')
+
+
+def backtest_rsi(c):
+    t0 = time.time()
+    df = preparedf(c, 360)
+
+    fuckdf(df)
+
+    ssi = df.shape[0]
+    print(ssi)
+
+    ops, pct = rsi_fuck_df_cts(df, si=-int(ssi / 2), ei=0, enrsi=False, dpct=0.5, dcount=3)
+
+    print(ops)
+    print(pct)
+
+    pass
+
+
+backtest_rsi('sh600036')

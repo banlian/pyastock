@@ -60,6 +60,7 @@ def fetch_stocks(stocks):
             # 获取一条记录，将记录合并在一起
             data_list.append(rs.get_row_data())
         result = pd.DataFrame(data_list, columns=rs.fields)
+        result['date'] = pd.to_datetime(result['date'])
         #### 结果集输出到csv文件 ####
         result.to_pickle(f'../rawdata/{name}.pkl')
         result.to_csv(f'../rawdata/{name}.csv')
@@ -101,13 +102,14 @@ def fetch_index(name):
             # 获取一条记录，将记录合并在一起
             data_list.append(rs.get_row_data())
         result = pd.DataFrame(data_list, columns=rs.fields)
+        result['date'] = pd.to_datetime(result['date'])
         #### 结果集输出到csv文件 ####
         result.to_pickle(f'../rawdata/{name}.pkl')
         result.to_csv(f'../rawdata/{name}.csv')
 
-        et = time.time() - t0
+        et = round(time.time() - t0, 2)
         # result.to_csv(name, index=False)
-        print('stock:', name, 'success', et, result.empty, result.shape[0])
+        print('stock:', name, 'success', et, 'empty:', result.empty, 'rows:', result.shape[0])
 
     #### 登出系统 ####
     bs.logout()
@@ -133,7 +135,7 @@ if __name__ == '__main__':
     fetch_index('sh.000001')
     fetch_index('sh.000300')
 
-    #fetch_stocks(stocks)
+    # fetch_stocks(stocks)
 
     print('save data finish')
     pass

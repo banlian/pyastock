@@ -25,7 +25,7 @@ def plot_stocks(stocks, title=''):
     """
 
     # 强制最后比较沪深300指数
-    stocks.append(300)
+    stocks.append('sh000300')
 
     plt.clf()
     ax = plt.gca()
@@ -56,10 +56,14 @@ def plot_stocks(stocks, title=''):
 
         if df is None or df.empty:
             dfs[s] = None
-            printex('read frame error: no stock data', s, cfg.datasource)
+            print('read frame error: no stock data', s, cfg.datasource)
             continue
 
         df = get_df_ndays(df, cfg.ndays)
+        if df is None:
+            dfs[s] = None
+            print(f'skip {s} df ndays empty')
+            continue
 
         algo_name = calc_frame_price(df)
         dfs[s] = df
@@ -69,7 +73,7 @@ def plot_stocks(stocks, title=''):
     # calc frames index
     dfindex = calc_ref_frameindex(stocks[:-1], dfs, days)
 
-    stocks = [s for s in stocks if s == 300 or not skip_stock_filter_by_index(dfs[s], dfindex)]
+    stocks = [s for s in stocks if s == 'sh000300' or not skip_stock_filter_by_index(dfs[s], dfindex)]
 
     # plot stock frames
     for s in stocks:
@@ -79,11 +83,11 @@ def plot_stocks(stocks, title=''):
 
         px = df.index
 
-        if s == 300:
+        if s == 'sh000300':
             # 300 指数pickle未能正常更新
             plt.plot(px, df.iloc[:, cfg.p_index].values, '.-k', linewidth=3, label=str(s))
             plt.text(px[-1], df.iloc[-1, cfg.p_index] - 0.05,
-                     s if isinstance(s, str) else db_id_to_name(s),
+                     db_id_to_name(s),
                      color='gold',
                      fontsize=9, alpha=0.8)
 
@@ -97,7 +101,7 @@ def plot_stocks(stocks, title=''):
         else:
             plt.plot(px, df.iloc[:, cfg.p_index].values, '.-', label=str(s))
             plt.text(px[-1], df.iloc[-1, cfg.p_index] - 0.05,
-                     s if isinstance(s, str) else db_id_to_name(s),
+                     db_id_to_name(s),
                      color='gray',
                      fontsize=9, alpha=0.8)
 
@@ -106,10 +110,7 @@ def plot_stocks(stocks, title=''):
 
     stocks.append('index')
     plt.legend(bbox_to_anchor=(1.01, 0.5), loc="center left")
-    if isinstance(stocks[0], str):
-        plt.legend(stocks, bbox_to_anchor=(1.01, 1), loc="upper left")
-    else:
-        plt.legend([db_id_to_name(s) for s in stocks], bbox_to_anchor=(1.01, 1), loc="upper left")
+    plt.legend([db_id_to_name(s) for s in stocks], bbox_to_anchor=(1.01, 1), loc="upper left")
 
     plt.grid('on')
     plt.title(title + ' ({})'.format(algo_name))
@@ -138,7 +139,7 @@ def plot_industry():
         try:
             plot_stocks(stocks, ind)
         except:
-            printex('plot industry error:', ind)
+            print('plot industry error:', ind)
             pass
         span = time.time() - t0
         print('plot {} finish {}s {}/{} - algo {} - ndays {}'.format(ind, span, index, end, cfg.algo, cfg.ndays))
@@ -171,7 +172,6 @@ class TestCase(unittest.TestCase):
 
     @classmethod
     def setUp(self) -> None:
-        init_ex()
         pass
 
     @print_durations
@@ -189,12 +189,11 @@ class TestCase(unittest.TestCase):
             self.plot()
 
     def tearDown(self) -> None:
-        save_ex()
+        pass
 
 
 if __name__ == '__main__':
 
-    init_ex()
     try:
         # for algo in [1,2,3]:
         #     plot_ndays()
@@ -204,7 +203,6 @@ if __name__ == '__main__':
         cfg.ndays = 60
         plot_industry()
     except Exception as ex:
-        save_ex()
         raise ex
 
     pass

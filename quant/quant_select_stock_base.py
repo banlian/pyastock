@@ -79,13 +79,13 @@ class AboveMa(SelectFuncObj):
         return False
 
 
-def quant_run_select_stocks(func_list: list[SelectFuncObj] = [], dayoffset: int = -1, algo='default'):
+def quant_run_select_stocks(func_list: list[SelectFuncObj] = [], dayoffset: int = -1, algo='default', stocks=None):
     """
     量化选股
     """
     results = []
 
-    stocks = all_stocksid()
+    stocks = all_stocksid() if stocks is None else stocks
 
     info = '-'.join([f.desc for f in func_list])
     print('run', info)
@@ -127,10 +127,10 @@ def quant_run_select_stocks(func_list: list[SelectFuncObj] = [], dayoffset: int 
 
     et = time.time() - t0
 
-    print('\n{}\nfound {} stocks by {:.2f} s !'.format(info, len(results), et.real))
+    print(f'\n{info}\nfound {len(results)} in {len(stocks)} stocks by {et.real:.2f} s !')
     print('finish')
 
-    quant_select_save('quant_select_stock_{}_{}.csv'.format(algo, day.strftime('%Y-%m-%d')), results)
+    quant_select_save(f'quant_select_stock_{algo}_{day.strftime("%Y-%m-%d")}.csv', results)
 
     return results
     pass
