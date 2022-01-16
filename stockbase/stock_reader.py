@@ -57,7 +57,7 @@ def get_pkl_filename(s):
         return None
 
     if isinstance(s, str):
-        if len(s) == 8 and s[:2] in ['sh', 'sz']:
+        if len(s) == 8 and s[:2] in ['sh', 'sz', 'bj']:
             return f'../rawdata/{s[:2]}.{s[2:]}.pkl'
 
         temp = s

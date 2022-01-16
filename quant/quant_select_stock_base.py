@@ -85,7 +85,7 @@ def quant_run_select_stocks(func_list: list[SelectFuncObj] = [], dayoffset: int 
     """
     results = []
 
-    stocks = all_stocksid() if stocks is None else stocks
+    stocks = db_select_tscodes() if stocks is None else stocks
 
     info = '-'.join([f.desc for f in func_list])
     print('run', info)
@@ -99,10 +99,11 @@ def quant_run_select_stocks(func_list: list[SelectFuncObj] = [], dayoffset: int 
     for s in stocks:
         df = get_kdf_from_pkl(s)
         if df is None or df.empty:
-            # print('df none', s)
+            print('df none', s)
             continue
 
         if df.shape[0] < abs(dayoffset) + 1:
+            print('df shape short', s)
             continue
 
         day = df['date'].iloc[-1 + dayoffset]
@@ -111,7 +112,7 @@ def quant_run_select_stocks(func_list: list[SelectFuncObj] = [], dayoffset: int 
 
         r = True
         for f in func_list:
-            if not f.run(df, s, dayoffset):
+            if not f.run(df, int(s[2:]), dayoffset):
                 r = False
                 break
 

@@ -2,7 +2,7 @@ import sqlite3
 
 
 def connectdb():
-    return sqlite3.connect(r'..\stocks.db')
+    return sqlite3.connect(r'E:\STOCKS\stock\stocks.db')
 
 
 def db_name_to_id(name):
@@ -87,6 +87,13 @@ def db_select_stockcodes():
         db = conn.execute('''select ts_code from STOCKBASIC''')
         res = db.fetchall()
     return [r[0][:6] for r in res]
+
+
+def db_select_tscodes():
+    with connectdb() as conn:
+        db = conn.execute('''select ts_code from STOCKBASIC where marketvalue>0''')
+        res = db.fetchall()
+    return [str.lower(r[0][-2:]) + r[0][:6] for r in res]
 
 
 def db_select_stockids():

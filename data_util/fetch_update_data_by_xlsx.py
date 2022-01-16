@@ -1,6 +1,7 @@
 import datetime
 import time
 
+import pandas
 import pandas as pd
 
 import unittest
@@ -39,13 +40,6 @@ def update_pickle_by_ths_df(df, date=None):
         fcode = format_code(code)
         # print(code, o, h, l, c, c0, vol, amount, turn, percent)
 
-        pklfile = '../rawdata/{}.pkl'.format(fcode)
-        csvfile = '../rawdata/{}.csv'.format(fcode)
-        if not os.path.exists(pklfile):
-            print('not found', pklfile)
-            errors.append(pklfile)
-            continue
-
         s = {'date': date,
              'code': fcode,
              'open': o, 'high': h, 'low': l, 'close': c,
@@ -57,6 +51,17 @@ def update_pickle_by_ths_df(df, date=None):
              'pctChg': percent,
              'isST': 0
              }
+
+        pklfile = '../rawdata/{}.pkl'.format(fcode)
+        csvfile = '../rawdata/{}.csv'.format(fcode)
+        if not os.path.exists(pklfile):
+            df = pandas.DataFrame(data=s)
+            df.to_pickle(pklfile)
+            df.to_csv(csvfile)
+            print('not found', pklfile)
+            errors.append(pklfile+'pkl not exists')
+            continue
+
         # print(df)
 
         df = pd.read_pickle(pklfile)
@@ -66,7 +71,7 @@ def update_pickle_by_ths_df(df, date=None):
             dfu = format_df(df)
             dfu.to_csv(csvfile)
             dfu.to_pickle(pklfile)
-            errors.append(fcode)
+            errors.append(fcode + ' df empty')
             continue
 
         d = df.loc[df['date'] == date]
@@ -92,7 +97,7 @@ def update_pickle_by_ths_df(df, date=None):
     try:
         with open('fetch_update_data_by_xlsx.log', 'w') as fs:
             for e in errors:
-                fs.write(str(e) + '\r\n')
+                fs.write(str(e) + '\n')
     except Exception as ex:
         print(ex)
 

@@ -5,6 +5,7 @@ import pandas as pd
 import os
 
 from stockbase.stock_db import *
+from stockbase.stock_reader import *
 
 from funcy import print_durations
 
@@ -37,7 +38,7 @@ def fetch_stocks(stocks):
 
         t0 = time.time()
 
-        name = get_stock_pickle_name(s)
+        name = get_stock_pickle_name(s) if isinstance(s, int) else s
         if name is None:
             print('stock name error:', name)
             continue
@@ -132,9 +133,20 @@ if __name__ == '__main__':
     # stocks = db_select_stockids()
     # print(stocks)
 
-    fetch_index('sh.000001')
-    fetch_index('sh.000300')
+    # fetch_index('sh.000001')
+    # fetch_index('sh.000300')
+    #
 
+    # 没有数据的股票
+    stocks = db_select_tscodes()
+    dllist = []
+    for s in stocks:
+        file = get_pkl_filename(s)
+        if not os.path.exists(file):
+            dllist.append(f'{s[:2]}.{s[2:]}')
+    print(dllist)
+    print(len(dllist))
+    fetch_stocks(dllist)
     # fetch_stocks(stocks)
 
     print('save data finish')
