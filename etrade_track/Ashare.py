@@ -57,7 +57,8 @@ def get_price_sina(code, end_date='', count=10, frequency='60m'):  # 新浪全�
     dstr = json.loads(requests.get(URL).content)
     if dstr is None:
         raise ValueError()
-    df = pd.DataFrame(dstr, columns=['day', 'open', 'high', 'low', 'close', 'volume'])
+    # df = pd.DataFrame(dstr, columns=['day', 'open', 'high', 'low', 'close', 'volume'])
+    df = pd.DataFrame(dstr)
     df[['open', 'close', 'high', 'low', 'volume']] = df[['open', 'close', 'high', 'low', 'volume']].astype('float')
     df.day = pd.to_datetime(df.day)
     df.set_index(['day'], inplace=True)
