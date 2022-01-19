@@ -74,10 +74,7 @@ def download_rsi_data(codes, freq='5m', count=60):
             df = get_price(c, frequency=freq, count=count)  # 分钟线实时行情，可用'1m','5m','15m','30m','60m'
             # print('{}60分钟线\n'.format(c), df)
             df = df.reset_index()
-            if 'day' in df.columns:
-                df.rename({'day': 'date'}, axis=1, inplace=True)
-            else:
-                df.rename({'': 'date'}, axis=1, inplace=True)
+            df.rename({'': 'date'}, axis=1, inplace=True)
             # print('download', c, ' df', df.shape[0])
             df.to_pickle('./temp/{}_{}.pkl'.format(c, freq))
             # df.to_csv('./temp/{}.csv'.format(c))

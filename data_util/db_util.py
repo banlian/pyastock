@@ -17,7 +17,7 @@ def update_db_marketvalue(df):
         name = r[1][0][2:]
         value = float(r[1][1]) / 1e8  # e
         if r[1][1] == '--' or math.isnan(value):
-            print('skip', name, value)
+            # print('skip', name, value)
             continue
         # print('update', name, value)
         conn.execute('''update STOCKBASIC set marketvalue = {} where symbol={} '''.format(value, int(name)))

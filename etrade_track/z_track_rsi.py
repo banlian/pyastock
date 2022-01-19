@@ -137,9 +137,9 @@ class RsiTrack(object):
             print(log)
 
     def init(self):
-        stocks = read_txt_code('short.txt')
+        stocks = read_xlsx_codes('short.xls')
         # if self.mode == 1:
-        stocks2 = read_txt_code('shortz.txt')
+        stocks2 = read_xlsx_codes('shortz.xls')
         stocks2 = [s for s in stocks2 if s not in stocks]
         stocks.extend(stocks2)
 

@@ -55,11 +55,11 @@ def update_pickle_by_ths_df(df, date=None):
         pklfile = '../rawdata/{}.pkl'.format(fcode)
         csvfile = '../rawdata/{}.csv'.format(fcode)
         if not os.path.exists(pklfile):
-            df = pandas.DataFrame(data=s)
+            df = pandas.DataFrame(data=s, index=[0])
             df.to_pickle(pklfile)
             df.to_csv(csvfile)
             print('not found', pklfile)
-            errors.append(pklfile+'pkl not exists')
+            errors.append(pklfile + 'pkl not exists')
             continue
 
         # print(df)

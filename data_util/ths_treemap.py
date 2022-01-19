@@ -36,7 +36,7 @@ def mapcolors():
     pass
 
 
-df = pd.read_csv('../temp/Table0114.xls', encoding='gbk', sep='\t')
+df = pd.read_csv('../temp/Table0118.xls', encoding='gbk', sep='\t')
 df['涨幅'] = df['涨幅'].str.strip('%')
 df['换手'] = df['换手'].str.strip('%')
 df['5日涨幅'] = df['5日涨幅'].str.strip('%')

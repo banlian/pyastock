@@ -17,66 +17,15 @@ class SelectFuncObj(object):
         return True
 
 
-class MarketValLimit(SelectFuncObj):
-    """
-    市值
-    """
-
-    def __init__(self):
-        super(MarketValLimit, self).__init__()
-        self.minval = 10
-        self.maxval = 1000
-
-    def run(self, df, s, dayoffset):
-        mv = marketvalue(s)
-        if self.minval <= mv <= self.maxval:
-            return True
-        return False
-
+def get_df(s):
+    return get_kdf_from_pkl(s)
     pass
 
-
-#
-# class MaCross(SelectFuncObj):
-#     """
-#     均线穿越
-#     """
-#
-#     def __init__(self):
-#         super(MaCross, self).__init__()
-#         self.ma0 = 5
-#         self.ma1 = 20
-#         self.above = True
-#
-#     def run(self, df, stock, dayoffset):
-#         ma0v = factor_ma(df, self.ma0, dayoffset)
-#         ma1v = factor_ma(df, self.ma1, dayoffset)
-#         ma0v1 = factor_ma(df, self.ma0, dayoffset - 1)
-#         ma1v1 = factor_ma(df, self.ma1, dayoffset - 1)
-#
-#         if self.above:
-#             # 上穿
-#             if ma0v >= ma1v and ma0v1 < ma1v1:
-#                 return True
-#         else:
-#             # 下穿
-#             if ma0v < ma1v and ma0v1 >= ma1v1:
-#                 return True
-#         return False
-
-
-class AboveMa(SelectFuncObj):
-    def __init__(self):
-        super(AboveMa, self).__init__()
-        self.ma = 5
-        pass
-
-    def run(self, df, stock, dayoffset):
-        ma = factor_ma(df, self.ma, dayoffset)
-        p = get_prices(1, dayoffset)[0]
-        if p >= ma:
-            return True
-        return False
+def get_df2(s):
+    file = f'{s}_1w.pkl'
+    df = pd.read_pickle(f'../etrade_track/temp/{file}.pkl')
+    return df
+    pass
 
 
 def quant_run_select_stocks(func_list: list[SelectFuncObj] = [], dayoffset: int = -1, algo='default', stocks=None):
@@ -97,7 +46,7 @@ def quant_run_select_stocks(func_list: list[SelectFuncObj] = [], dayoffset: int 
     t0 = time.time()
 
     for s in stocks:
-        df = get_kdf_from_pkl(s)
+        df = get_df(s)
         if df is None or df.empty:
             print('df none', s)
             continue
