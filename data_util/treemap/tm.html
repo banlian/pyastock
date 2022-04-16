@@ -1,0 +1,40 @@
+
+<html>
+
+<head>
+        <title>zindex</title>
+
+</head>
+<body class="has-map" style="margin:0" bgcolor="#ffffff">
+
+<div class="content map">
+
+</div>
+
+
+<script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.1.min.js"></script>
+<script src="https://cdn.staticfile.org/d3/3.4.11/d3.js"></script>
+<script src="/static/com.js"></script>
+<script src="/static/react-with-addons.min.js"></script>
+<script src="/static/d3.js"></script>
+<script src="/static/hammer.min.js"></script>
+<script src="/static/map.bundle.4eastMoney.js"></script>
+<!--<script src="/static/map.bundle.js"></script> -->
+<!--<script src="/static/map.js"></script>-->
+<script>
+    document.write('<script src="/static/map.js?v='+new Date().getMonth() + '"><\/script>')
+</script>
+<script src="/static/random.js"></script>
+<script type="text/javascript">
+    function OnResize(){}window.onresize=OnResize;OnResize();
+    var aphorism = msg[Math.floor(Math.random() * msg.length)]
+    $("#random_aphorism").html(aphorism);
+
+    $("#miniProgram").click(function(){
+        $("#miniProgram").hide();
+        $("#donate").show();
+    })
+
+</script>
+</body>
+</html>
