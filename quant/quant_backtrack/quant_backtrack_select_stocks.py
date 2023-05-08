@@ -2,7 +2,7 @@ import datetime
 
 from quant.quant_backtrack_base import *
 from quant.quant_select_stock_base import *
-from quant_select_stock.algo2_macross5 import MaCross5
+from quant.quant_select_stock.algo2_macross5 import MaCross5
 
 
 def back_track_select_stocks(select_funs: list[SelectFuncObj]):

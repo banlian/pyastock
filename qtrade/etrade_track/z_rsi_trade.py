@@ -2,14 +2,11 @@ import datetime
 import os.path
 
 import sys;
-import time
 
 print('Python %s on %s' % (sys.version, sys.platform))
 sys.path.extend(['C:\\Users\\z\\Desktop\\wx_trade', 'C:/Users/z/Desktop/wx_trade'])
 
-import pandas as pd
-
-from etrade_track.z_trade_helper import *
+from qtrade.etrade_track.z_trade_helper import *
 from z_algo_rsi import *
 
 

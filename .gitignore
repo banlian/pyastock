@@ -167,7 +167,7 @@ fabric.properties
 
 /eqdata/*.pkl
 /eqdata/*.csv
-/etrade_track/temp/
+/qtrade/etrade_track/temp/
 *.csv
 *.xls
 *.xlsx

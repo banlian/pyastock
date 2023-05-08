@@ -1,10 +1,4 @@
-
-
-import time
-
-import pandas as pd
-
-from etrade_track.z_helper import read_xlsx_codes
+from qtrade.etrade_track.z_helper import read_xlsx_codes
 
 #
 codes0 = read_xlsx_codes('short.xls')

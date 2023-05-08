@@ -2,12 +2,11 @@
 # rsi 连续买卖测试
 
 import datetime
-import math
 import time
 
 from MyTT import *
-from etrade_track.z_algo_rsi import *
-from etrade_track.z_helper import *
+from qtrade.etrade_track.z_algo_rsi import *
+from qtrade.etrade_track.z_helper import *
 
 
 def getday(dt):

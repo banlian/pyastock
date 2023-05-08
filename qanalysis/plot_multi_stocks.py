@@ -124,7 +124,7 @@ def plot_stocks(stocks, title=''):
 
 @print_durations()
 def plot_industry():
-    conn = sqlite3.connect('stocks.db')
+    conn = sqlite3.connect('../db/stocks.db')
     ret = conn.execute('''select distinct industry from stockbasic''').fetchall()
 
     index = 1

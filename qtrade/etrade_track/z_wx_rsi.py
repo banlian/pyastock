@@ -1,16 +1,13 @@
-import os
 import wx
 import wx.grid
-import asyncio
 
 import threading
 import time
 import datetime
-import asyncio
 
-from etrade_track.z_algo_rsi import get_stock_rsi
-from etrade_track.z_helper import get_stock_kline
-from etrade_track.z_track_rsi import RsiTrack, notifywin
+from qtrade.etrade_track.z_algo_rsi import get_stock_rsi
+from qtrade.etrade_track.z_helper import get_stock_kline
+from qtrade.etrade_track.z_track_rsi import RsiTrack, notifywin
 
 
 class MainWindow(wx.Frame):

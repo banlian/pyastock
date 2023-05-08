@@ -6,7 +6,7 @@ import pandas as pd
 
 from pylab import mpl
 
-from data_util.helper import read_ths_xlsx_to_df
+from db.data_util.helper import read_ths_xlsx_to_df
 
 mpl.rcParams['font.sans-serif'] = ['SimHei']  # 指定默认字体
 mpl.rcParams['axes.unicode_minus'] = False  # 解决保存图像是负号'-'显示为方块的问题

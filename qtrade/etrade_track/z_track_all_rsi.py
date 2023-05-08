@@ -1,5 +1,5 @@
-from etrade_track.z_helper import read_txt_code
-from etrade_track.z_track_rsi import track_short_rsi
+from qtrade.etrade_track.z_helper import read_txt_code
+from qtrade.etrade_track.z_track_rsi import track_short_rsi
 
 
 if __name__ == '__main__':

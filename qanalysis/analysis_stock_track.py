@@ -26,7 +26,7 @@ def stock_track():
 
 def quant_track():
 
-    results = read_quant_output_stocks('quant_select_stock/quant_select_stock.csv')
+    results = read_quant_output_stocks('quant/quant_select_stock/quant_select_stock.csv')
 
     track_to_csv('quant', [r[0] for r in results], 2)
 

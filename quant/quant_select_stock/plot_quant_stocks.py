@@ -1,7 +1,7 @@
 
 
 
-from plot_multi_stocks import *
+from qanalysis.plot_multi_stocks import *
 
 import pandas
 

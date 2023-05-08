@@ -50,7 +50,7 @@ class Test_Test(unittest.TestCase):
         pass
 
     def test_check_pickle_empty(self):
-        for file in os.listdir('.'):
+        for file in os.listdir(''):
             if file.find('.pkl') > 0:
                 f = pd.read_pickle(file)
                 if f.empty:
@@ -77,7 +77,7 @@ class Test_Test(unittest.TestCase):
     def test_format_pickle(self):
 
         index = 1
-        for file in os.listdir('.'):
+        for file in os.listdir(''):
             if file.find('.pkl') > 0 and file.find('table') < 0:
                 f = pd.read_pickle(file)
                 if f.empty:

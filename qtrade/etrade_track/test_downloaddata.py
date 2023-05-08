@@ -1,8 +1,6 @@
-import pandas as pd
-
 from Ashare import *
 from MyTT import *
-from etrade_track.z_helper import *
+from qtrade.etrade_track.z_helper import *
 from stockbase.stock_db import *
 
 stocks = db_select_tscodes()

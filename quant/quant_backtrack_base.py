@@ -1,4 +1,4 @@
-from plot_multi_stocks import plot_stocks
+from qanalysis.plot_multi_stocks import plot_stocks
 from quant.quant_base import read_quant_output_stocks
 from stockbase.stock_core import cfg
 

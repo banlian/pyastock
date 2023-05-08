@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 
-from data_util.fetch_update_data_by_xlsx import read_ths_xlsx_to_df
+from db.data_util.fetch_update_data_by_xlsx import read_ths_xlsx_to_df
 from stockbase.stock_db import db_id_to_name
 
 import matplotlib.pyplot as plt

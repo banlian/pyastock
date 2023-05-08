@@ -1,14 +1,10 @@
 import datetime
-import math
 
-import pandas as pd
 import time
 
-import os
-import io
 import win10toast
 
-from etrade_track.z_algo_rsi import *
+from qtrade.etrade_track.z_algo_rsi import *
 from stockbase.stock_db import *
 
 toast = win10toast.ToastNotifier()

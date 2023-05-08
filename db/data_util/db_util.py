@@ -1,9 +1,8 @@
 import math
 
-import pandas as pd
 import sqlite3
 
-from data_util.fetch_update_data_by_xlsx import *
+from db.data_util.fetch_update_data_by_xlsx import *
 from stockbase.stock_db import db_select_stockcodes
 
 

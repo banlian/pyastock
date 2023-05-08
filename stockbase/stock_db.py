@@ -156,7 +156,7 @@ class Test_db(unittest.TestCase):
 
     def test_bks(self):
         bks = select_bks()
-        with open('../bk.txt', 'w') as fs:
+        with open('../obsolete/bk.txt', 'w') as fs:
             for bk in bks:
                 fs.write(f'{bk}\n')
         print(bks)
